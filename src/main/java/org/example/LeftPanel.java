@@ -30,7 +30,7 @@ public class LeftPanel extends JPanel {
 
         buttonsPanel.setMaximumSize(new Dimension(9999, button.getHeight()));
 
-        fileTree = new FileTree();
+        fileTree = new FileTree(UDZNote.ROOT_PATH);
         add(BorderLayout.NORTH, fileTree);
     }
 }
