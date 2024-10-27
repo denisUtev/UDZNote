@@ -61,7 +61,9 @@ public class UDZNote {
 
     private static void createTab(String nameTab, String text, String filePath) {
         UTextPane textPane = new UTextPane(nameTab, filePath);
-        textPane.setText(text);
+        if (!filePath.endsWith(".md") && !filePath.endsWith(".rtf")) {
+            textPane.setText(text);
+        }
         textPane.setFont(Params.TEXT_FONT);
         JScrollPane scrollPane = new JScrollPane(textPane);
         scrollPane.setBackground(new Color(0, 0, 0, 0));

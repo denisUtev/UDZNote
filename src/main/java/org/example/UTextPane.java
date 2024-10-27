@@ -1,6 +1,8 @@
 package org.example;
 
 import org.example.FileTreeActions.UFileService;
+import org.example.TextPaneActions.ExportMdFile;
+import org.example.TextPaneActions.LoadMdText;
 
 import javax.swing.*;
 import javax.swing.text.*;
@@ -38,6 +40,8 @@ public class UTextPane extends JTextPane {
 
         if (fileName.endsWith(".rtf")) {
             readRtfFile();
+        } else if (fileName.endsWith(".md")) {
+            readMdFile();
         }
 
         try {
@@ -83,10 +87,12 @@ public class UTextPane extends JTextPane {
                 try {
                     //String filePath = fil;
                     if (filePath != null && filePath.exists() && filePath.isFile()) {
-                        if (!fileName.endsWith(".rtf")) {
-                            UFileService.saveFile(filePath.getPath(), getText());
-                        } else {
+                        if (fileName.endsWith(".rtf")) {
                             exportToRtf();
+                        } else if (fileName.endsWith(".md")) {
+                            exportToMd();
+                        } else {
+                            UFileService.saveFile(filePath.getPath(), getText());
                         }
                         try {
                             lastModifiedTime = Files.getLastModifiedTime(Paths.get(filePath.getPath()));
@@ -131,7 +137,7 @@ public class UTextPane extends JTextPane {
             out = new BufferedOutputStream(new FileOutputStream(filePath));
             kit.write(out, doc, doc.getStartPosition().getOffset(), doc.getLength());
             out.close();
-        } catch (IOException | BadLocationException ignored){
+        } catch (IOException | BadLocationException ignored) {
         }
     }
 
@@ -148,10 +154,25 @@ public class UTextPane extends JTextPane {
         }
     }
 
+    private void exportToMd() {
+        ExportMdFile.export(getText(), getStyledDocument(), filePath);
+    }
+
+    private void readMdFile() {
+        String text = UFileService.loadFile(filePath.getPath());
+        //setText(text);
+        StyledDocument doc = getStyledDocument();
+        try {
+            LoadMdText.load(text, doc);
+        } catch (BadLocationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void checkUpdatesFile() {
         try {
             var lastTime = Files.getLastModifiedTime(Paths.get(filePath.getPath()));
-            if (lastModifiedTime.compareTo(lastTime) != 0) {
+            if (lastModifiedTime.compareTo(lastTime) != 0 && !fileName.endsWith(".md")) {
                 setText(UFileService.loadFile(filePath.getPath()));
                 lastModifiedTime = lastTime;
             }
@@ -196,12 +217,24 @@ public class UTextPane extends JTextPane {
         JMenu stylesMenu = new JMenu("Styles   ");
         JMenuItem style1 = getBoldMenuItem();
         stylesMenu.add(style1);
-        JMenuItem style2 = new JMenuItem("coursive");
+        JMenuItem style2 = getCursiveItem();
         stylesMenu.add(style2);
         JMenuItem style3 = getPastMenuItem();
         stylesMenu.add(style3);
 
         pmenu.add(stylesMenu);
+
+        JMenu alginmentMenu = new JMenu("Alignment");
+        JMenuItem algign1 = getAlignLeftMenuItem();
+        alginmentMenu.add(algign1);
+        JMenuItem algign2 = getAlignCenterMenuItem();
+        alginmentMenu.add(algign2);
+        JMenuItem algign3 = getAlignRightMenuItem();
+        alginmentMenu.add(algign3);
+        JMenuItem algign4 = getAlignJustifiedMenuItem();
+        alginmentMenu.add(algign4);
+
+        pmenu.add(alginmentMenu);
 
         return pmenu;
     }
@@ -226,6 +259,7 @@ public class UTextPane extends JTextPane {
             public void actionPerformed(ActionEvent actionEvent) {
                 SimpleAttributeSet headerStyle = new SimpleAttributeSet();
                 StyleConstants.setFontSize(headerStyle, 18);
+                StyleConstants.setItalic(headerStyle, false);
                 StyleConstants.setBold(headerStyle, false);
                 StyledDocument doc = getStyledDocument();
                 doc.setCharacterAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), headerStyle, false);
@@ -246,6 +280,76 @@ public class UTextPane extends JTextPane {
             }
         });
         bold.setText("Bold");
+        return bold;
+    }
+
+    private JMenuItem getCursiveItem() {
+        JMenuItem bold = new JMenuItem(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                SimpleAttributeSet headerStyle = new SimpleAttributeSet();
+                StyleConstants.setItalic(headerStyle, true);
+                StyledDocument doc = getStyledDocument();
+                doc.setCharacterAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), headerStyle, false);
+            }
+        });
+        bold.setText("Cursive");
+        return bold;
+    }
+
+    private JMenuItem getAlignLeftMenuItem() {
+        JMenuItem bold = new JMenuItem(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                SimpleAttributeSet alignStyle = new SimpleAttributeSet();
+                StyleConstants.setAlignment(alignStyle, StyleConstants.ALIGN_LEFT);
+                StyledDocument doc = getStyledDocument();
+                doc.setParagraphAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), alignStyle, false);
+            }
+        });
+        bold.setText("Left");
+        return bold;
+    }
+
+    private JMenuItem getAlignCenterMenuItem() {
+        JMenuItem bold = new JMenuItem(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                SimpleAttributeSet alignStyle = new SimpleAttributeSet();
+                StyleConstants.setAlignment(alignStyle, StyleConstants.ALIGN_CENTER);
+                StyledDocument doc = getStyledDocument();
+                doc.setParagraphAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), alignStyle, false);
+            }
+        });
+        bold.setText("Center");
+        return bold;
+    }
+
+    private JMenuItem getAlignRightMenuItem() {
+        JMenuItem bold = new JMenuItem(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                SimpleAttributeSet alignStyle = new SimpleAttributeSet();
+                StyleConstants.setAlignment(alignStyle, StyleConstants.ALIGN_RIGHT);
+                StyledDocument doc = getStyledDocument();
+                doc.setParagraphAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), alignStyle, false);
+            }
+        });
+        bold.setText("Right");
+        return bold;
+    }
+
+    private JMenuItem getAlignJustifiedMenuItem() {
+        JMenuItem bold = new JMenuItem(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                SimpleAttributeSet alignStyle = new SimpleAttributeSet();
+                StyleConstants.setAlignment(alignStyle, StyleConstants.ALIGN_JUSTIFIED);
+                StyledDocument doc = getStyledDocument();
+                doc.setParagraphAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), alignStyle, false);
+            }
+        });
+        bold.setText("Justified");
         return bold;
     }
 

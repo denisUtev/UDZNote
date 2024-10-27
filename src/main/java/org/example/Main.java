@@ -7,6 +7,11 @@ import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import javax.swing.*;
 
 public class Main {
+
+    /*
+        checkUpdatesFile() - надо будет доработать...
+     */
+
     public static void main(String[] args) {
         try {
             //UIManager.setLookAndFeel(new FlatLightLaf());
