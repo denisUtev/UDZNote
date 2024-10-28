@@ -1,6 +1,8 @@
 package org.example;
 
 import org.example.FileTreeActions.UFileService;
+import org.jpedal.examples.viewer.Commands;
+import org.jpedal.examples.viewer.Viewer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,8 +18,8 @@ public class UDZNote {
     private static DnDTabbedPane tabbedPane;
 
     public static String WORKING_DIR;
-    public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2";
-    //public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\База знаний";
+    //public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2";
+    public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\База знаний";
 
     public UDZNote() {
         WORKING_DIR = System.getProperty("user.dir");
@@ -96,10 +98,29 @@ public class UDZNote {
         if (i > 0) {
             extension = path.substring(i + 1);
         }
-        createTab(title, text, path);
+        if (extension.equals("pdf")) {
+            openPdfFile(title, path);
+        } else {
+            createTab(title, text, path);
+        }
 //        if (extension.equals("png") || extension.equals("jpg")) {
 //            addImageTab(title, path);
 //        }
+    }
+
+    private static void openPdfFile(String nameTab, String path) {
+        JPanel scrollPane = new JPanel();
+        scrollPane.setBackground(new Color(0, 0, 0, 0));
+        scrollPane.setBorder(null);
+
+        Viewer viewer = new Viewer(scrollPane,null);
+        viewer.setupViewer();
+        viewer.executeCommand(Commands.OPENFILE, new Object[]{ path });
+
+        //add viewer to your application
+        mainFrame.add(scrollPane,BorderLayout.CENTER);
+
+        addTab(nameTab, scrollPane);
     }
 
     public static JFrame getMainFrame() {
