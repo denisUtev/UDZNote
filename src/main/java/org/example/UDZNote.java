@@ -17,6 +17,7 @@ public class UDZNote {
 
     public static String WORKING_DIR;
     public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2";
+    //public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\База знаний";
 
     public UDZNote() {
         WORKING_DIR = System.getProperty("user.dir");

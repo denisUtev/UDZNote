@@ -1,19 +1,25 @@
 package org.example;
 
-import org.example.FileTreeActions.UFileService;
+import com.github.rjeschke.txtmark.Configuration;
+import com.github.rjeschke.txtmark.Processor;
 import org.example.TextPaneActions.ExportMdFile;
-import org.example.TextPaneActions.LoadMdText;
 
 import javax.swing.*;
 import javax.swing.text.*;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 import javax.swing.text.rtf.RTFEditorKit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.*;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
@@ -142,17 +148,22 @@ public class UTextPane extends JTextPane {
     }
 
     private void readRtfFile() {
-        RTFEditorKit kit = new RTFEditorKit();
-        setEditorKit( kit );
-        BufferedInputStream out;
+        //setContentType("text/rtf");
+        setContentType("text/html");
+        setDocument(new HTMLDocument());
 
+        RTFEditorKit kit = new RTFEditorKit();
+        setEditorKit(kit);
+
+        BufferedInputStream out;
         try {
             out = new BufferedInputStream(new FileInputStream(filePath));
             kit.read(out, getDocument(), 0);
             out.close();
-        } catch (IOException | BadLocationException ignored){
+        } catch (IOException | BadLocationException ignored) {
         }
     }
+
 
     private void exportToMd() {
         ExportMdFile.export(getText(), getStyledDocument(), filePath);
@@ -161,12 +172,15 @@ public class UTextPane extends JTextPane {
     private void readMdFile() {
         String text = UFileService.loadFile(filePath.getPath());
         //setText(text);
-        StyledDocument doc = getStyledDocument();
-        try {
-            LoadMdText.load(text, doc);
-        } catch (BadLocationException e) {
-            throw new RuntimeException(e);
-        }
+        // Создаем парсер и рендерер
+        String htmlText = convertMarkdownToHtml(text);
+        setContentType("text/html");
+        setText(htmlText);
+    }
+
+    public static String convertMarkdownToHtml(String markdownText) {
+        Configuration config = Configuration.builder().forceExtentedProfile().build();
+        return Processor.process(markdownText, config);
     }
 
     private void checkUpdatesFile() {
@@ -223,6 +237,26 @@ public class UTextPane extends JTextPane {
         stylesMenu.add(style3);
 
         pmenu.add(stylesMenu);
+
+        JMenu colorsMenu = new JMenu("Colors   ");
+        JMenuItem color1 = getColorMenuItem(Color.BLACK, "black");
+        colorsMenu.add(color1);
+        JMenuItem color2 = getColorMenuItem(Color.GRAY, "gray");
+        colorsMenu.add(color2);
+        JMenuItem color3 = getColorMenuItem(Color.BLUE, "blue");
+        colorsMenu.add(color3);
+        JMenuItem color4 = getColorMenuItem(Color.GREEN, "green");
+        colorsMenu.add(color4);
+        JMenuItem color5 = getColorMenuItem(Color.RED, "red");
+        colorsMenu.add(color5);
+        JMenuItem color6 = getColorMenuItem(Color.ORANGE, "orange");
+        colorsMenu.add(color6);
+        JMenuItem color7 = getColorMenuItem(Color.YELLOW, "yellow");
+        colorsMenu.add(color7);
+        JMenuItem color8 = getColorMenuItem(Color.WHITE, "white");
+        colorsMenu.add(color8);
+
+        pmenu.add(colorsMenu);
 
         JMenu alginmentMenu = new JMenu("Alignment");
         JMenuItem algign1 = getAlignLeftMenuItem();
@@ -350,6 +384,20 @@ public class UTextPane extends JTextPane {
             }
         });
         bold.setText("Justified");
+        return bold;
+    }
+
+    private JMenuItem getColorMenuItem(Color col, String name) {
+        JMenuItem bold = new JMenuItem(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                SimpleAttributeSet headerStyle = new SimpleAttributeSet();
+                StyleConstants.setForeground(headerStyle, col);
+                StyledDocument doc = getStyledDocument();
+                doc.setCharacterAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), headerStyle, false);
+            }
+        });
+        bold.setText(name);
         return bold;
     }
 

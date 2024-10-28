@@ -1,6 +1,7 @@
 package org.example;
 
 
+import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 
@@ -9,16 +10,17 @@ import javax.swing.*;
 public class Main {
 
     /*
-        checkUpdatesFile() - надо будет доработать...
+        1. checkUpdatesFile() - надо будет доработать...
+        2. В md вкладках нужно реализовать стили на css
      */
 
     public static void main(String[] args) {
         try {
             //UIManager.setLookAndFeel(new FlatLightLaf());
             //UIManager.setLookAndFeel(new FlatMacLightLaf());
-            //UIManager.setLookAndFeel(new FlatDarkLaf());
+            UIManager.setLookAndFeel(new FlatDarkLaf());
 
-            UIManager.setLookAndFeel(new FlatIntelliJLaf());
+            //UIManager.setLookAndFeel(new FlatIntelliJLaf());
 
             //UIManager.setLookAndFeel(new MetalLookAndFeel());
             //UIManager.setLookAndFeel(new FlatMacDarkLaf());
