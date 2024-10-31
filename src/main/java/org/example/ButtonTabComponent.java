@@ -1,7 +1,12 @@
 package org.example;
 
+import org.example.FileTreeActions.*;
+
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicButtonUI;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -17,6 +22,7 @@ public class ButtonTabComponent extends JPanel {
         this.pane = pane;
         setOpaque(false);
 
+        //setComponentPopupMenu(createPopupMenu());
         //make JLabel read titles from JTabbedPane
 //        JLabel label = new JLabel() {
 //            public String getText() {
@@ -37,6 +43,7 @@ public class ButtonTabComponent extends JPanel {
         //add more space to the top of the component
         setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
     }
+
 
     private class TabButton extends JButton implements ActionListener {
         public TabButton() {

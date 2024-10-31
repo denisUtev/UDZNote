@@ -27,6 +27,7 @@ import java.nio.file.attribute.FileTime;
 public class UTextPane extends JTextPane {
 
     final UndoManager undoMgr = new UndoManager();
+    private JLabel titleTab;
 
     public FileTime lastModifiedTime;
     public File filePath;
@@ -61,7 +62,10 @@ public class UTextPane extends JTextPane {
 
     public void setSettings() {
         setTabSize(22);
-        getDocument().addUndoableEditListener(pEvt -> undoMgr.addEdit(pEvt.getEdit()));
+        getDocument().addUndoableEditListener(pEvt -> {
+            undoMgr.addEdit(pEvt.getEdit());
+            titleTab.setForeground(new Color(35, 135, 204));
+        });
         // Add undo/redo actions
         getActionMap().put(UNDO_ACTION, new AbstractAction(UNDO_ACTION) {
             public void actionPerformed(ActionEvent pEvt) {
@@ -100,6 +104,7 @@ public class UTextPane extends JTextPane {
                         } else {
                             UFileService.saveFile(filePath.getPath(), getText());
                         }
+                        titleTab.setForeground(Color.WHITE);
                         try {
                             lastModifiedTime = Files.getLastModifiedTime(Paths.get(filePath.getPath()));
                         } catch (IOException e) {
@@ -281,6 +286,7 @@ public class UTextPane extends JTextPane {
                 StyleConstants.setFontSize(headerStyle, fontSize);
                 StyledDocument doc = getStyledDocument();
                 doc.setCharacterAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), headerStyle, false);
+                titleTab.setForeground(new Color(35, 135, 204));
             }
         });
         header.setText(name);
@@ -297,6 +303,7 @@ public class UTextPane extends JTextPane {
                 StyleConstants.setBold(headerStyle, false);
                 StyledDocument doc = getStyledDocument();
                 doc.setCharacterAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), headerStyle, false);
+                titleTab.setForeground(new Color(35, 135, 204));
             }
         });
         past.setText("Past");
@@ -311,6 +318,7 @@ public class UTextPane extends JTextPane {
                 StyleConstants.setBold(headerStyle, true);
                 StyledDocument doc = getStyledDocument();
                 doc.setCharacterAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), headerStyle, false);
+                titleTab.setForeground(new Color(35, 135, 204));
             }
         });
         bold.setText("Bold");
@@ -325,6 +333,7 @@ public class UTextPane extends JTextPane {
                 StyleConstants.setItalic(headerStyle, true);
                 StyledDocument doc = getStyledDocument();
                 doc.setCharacterAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), headerStyle, false);
+                titleTab.setForeground(new Color(35, 135, 204));
             }
         });
         bold.setText("Cursive");
@@ -332,17 +341,19 @@ public class UTextPane extends JTextPane {
     }
 
     private JMenuItem getAlignLeftMenuItem() {
-        JMenuItem bold = new JMenuItem(new AbstractAction() {
+        JMenuItem alignLeftItem = new JMenuItem(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 SimpleAttributeSet alignStyle = new SimpleAttributeSet();
                 StyleConstants.setAlignment(alignStyle, StyleConstants.ALIGN_LEFT);
                 StyledDocument doc = getStyledDocument();
-                doc.setParagraphAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), alignStyle, false);
+                doc.setParagraphAttributes(getSelectionStart(),
+                        getSelectionEnd() - getSelectionStart(), alignStyle, false);
+                titleTab.setForeground(new Color(35, 135, 204));
             }
         });
-        bold.setText("Left");
-        return bold;
+        alignLeftItem.setText("Left");
+        return alignLeftItem;
     }
 
     private JMenuItem getAlignCenterMenuItem() {
@@ -353,6 +364,7 @@ public class UTextPane extends JTextPane {
                 StyleConstants.setAlignment(alignStyle, StyleConstants.ALIGN_CENTER);
                 StyledDocument doc = getStyledDocument();
                 doc.setParagraphAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), alignStyle, false);
+                titleTab.setForeground(new Color(35, 135, 204));
             }
         });
         bold.setText("Center");
@@ -367,6 +379,7 @@ public class UTextPane extends JTextPane {
                 StyleConstants.setAlignment(alignStyle, StyleConstants.ALIGN_RIGHT);
                 StyledDocument doc = getStyledDocument();
                 doc.setParagraphAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), alignStyle, false);
+                titleTab.setForeground(new Color(35, 135, 204));
             }
         });
         bold.setText("Right");
@@ -381,6 +394,7 @@ public class UTextPane extends JTextPane {
                 StyleConstants.setAlignment(alignStyle, StyleConstants.ALIGN_JUSTIFIED);
                 StyledDocument doc = getStyledDocument();
                 doc.setParagraphAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), alignStyle, false);
+                titleTab.setForeground(new Color(35, 135, 204));
             }
         });
         bold.setText("Justified");
@@ -395,10 +409,15 @@ public class UTextPane extends JTextPane {
                 StyleConstants.setForeground(headerStyle, col);
                 StyledDocument doc = getStyledDocument();
                 doc.setCharacterAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), headerStyle, false);
+                titleTab.setForeground(new Color(35, 135, 204));
             }
         });
         bold.setText(name);
         return bold;
+    }
+
+    public void setTitleTab(JLabel titleTab) {
+        this.titleTab = titleTab;
     }
 
 //    @Override

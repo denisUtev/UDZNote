@@ -18,8 +18,8 @@ public class UDZNote {
     private static DnDTabbedPane tabbedPane;
 
     public static String WORKING_DIR;
-    //public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2";
-    public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\База знаний";
+    public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2";
+    //public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\База знаний";
 
     public UDZNote() {
         WORKING_DIR = System.getProperty("user.dir");
@@ -71,10 +71,16 @@ public class UDZNote {
         JScrollPane scrollPane = new JScrollPane(textPane);
         scrollPane.setBackground(new Color(0, 0, 0, 0));
         scrollPane.setBorder(null);
-        addTab(nameTab, scrollPane);
+
+        nameTab = getShortedTitle(nameTab);
+        JLabel titleTab = new JLabel(nameTab);
+        titleTab.setFont(Params.TAB_TITLE_FONT);
+        textPane.setTitleTab(titleTab);
+        titleTab.setForeground(Color.WHITE);
+        addTab(nameTab, scrollPane, titleTab);
     }
 
-    public static void addTab(String title, JComponent contentPanel){
+    private static String getShortedTitle(String title) {
         if (title.length() > 25) {
             title = title.substring(0, 25) + "...";
         }
@@ -82,12 +88,14 @@ public class UDZNote {
         while (titleBuilder.length() < 25) {
             titleBuilder.append(' ');
         }
-        title = titleBuilder.toString();
-        tabbedPane.addTab(title, contentPanel);
+        return titleBuilder.toString();
+    }
 
-        JLabel name = new JLabel(title);
-        name.setFont(Params.TAB_TITLE_FONT);
-        tabbedPane.setTabComponentAt(tabbedPane.getTabCount() - 1, new ButtonTabComponent(tabbedPane, name));
+    public static void addTab(String title, JComponent contentPanel, JLabel nameTab){
+        tabbedPane.addTab(title, contentPanel);
+        //JLabel name = new JLabel(title);
+        //name.setFont(Params.TAB_TITLE_FONT);
+        tabbedPane.setTabComponentAt(tabbedPane.getTabCount() - 1, new ButtonTabComponent(tabbedPane, nameTab));
     }
 
     public static void openFile(String path) {
@@ -113,14 +121,18 @@ public class UDZNote {
         scrollPane.setBackground(new Color(0, 0, 0, 0));
         scrollPane.setBorder(null);
 
-        Viewer viewer = new Viewer(scrollPane,null);
+        Viewer viewer = new Viewer(scrollPane, Params.pdfPropertiesPath);
         viewer.setupViewer();
         viewer.executeCommand(Commands.OPENFILE, new Object[]{ path });
 
         //add viewer to your application
-        mainFrame.add(scrollPane,BorderLayout.CENTER);
+        mainFrame.add(scrollPane, BorderLayout.CENTER);
 
-        addTab(nameTab, scrollPane);
+        nameTab = getShortedTitle(nameTab);
+        JLabel titleTab = new JLabel(nameTab);
+        titleTab.setFont(Params.TAB_TITLE_FONT);
+        titleTab.setForeground(Color.WHITE);
+        addTab(nameTab, scrollPane, titleTab);
     }
 
     public static JFrame getMainFrame() {

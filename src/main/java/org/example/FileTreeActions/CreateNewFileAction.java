@@ -19,6 +19,9 @@ public class CreateNewFileAction  extends AbstractAction {
         if (fileTree.isChoosedDirectory) {
             String nameNewFile = JOptionPane.showInputDialog("Enter file name");
             if (nameNewFile != null) {
+                if (!nameNewFile.contains(".")) {
+                    nameNewFile += ".rtf";
+                }
                 UFileService.createFile(fileTree.getChoosedPath() + "/" + nameNewFile, "");
                 fileTree.updateFileTree();
             }
