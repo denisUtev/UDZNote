@@ -4,12 +4,10 @@ import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
 import org.example.TextPaneActions.ExportMdFile;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.text.*;
-import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.StyleSheet;
 import javax.swing.text.rtf.RTFEditorKit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -18,11 +16,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UTextPane extends JTextPane {
 
@@ -64,7 +68,9 @@ public class UTextPane extends JTextPane {
         setTabSize(22);
         getDocument().addUndoableEditListener(pEvt -> {
             undoMgr.addEdit(pEvt.getEdit());
-            titleTab.setForeground(new Color(35, 135, 204));
+            if (titleTab != null) {
+                titleTab.setForeground(new Color(35, 135, 204));
+            }
         });
         // Add undo/redo actions
         getActionMap().put(UNDO_ACTION, new AbstractAction(UNDO_ACTION) {
@@ -94,26 +100,7 @@ public class UTextPane extends JTextPane {
         });
         getActionMap().put(SAVE_ACTION, new AbstractAction(SAVE_ACTION) {
             public void actionPerformed(ActionEvent pEvt) {
-                try {
-                    //String filePath = fil;
-                    if (filePath != null && filePath.exists() && filePath.isFile()) {
-                        if (fileName.endsWith(".rtf")) {
-                            exportToRtf();
-                        } else if (fileName.endsWith(".md")) {
-                            exportToMd();
-                        } else {
-                            UFileService.saveFile(filePath.getPath(), getText());
-                        }
-                        titleTab.setForeground(Color.WHITE);
-                        try {
-                            lastModifiedTime = Files.getLastModifiedTime(Paths.get(filePath.getPath()));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                } catch (CannotRedoException e) {
-                    //e.printStackTrace();
-                }
+                saveText();
             }
         });
 
@@ -138,7 +125,35 @@ public class UTextPane extends JTextPane {
         setComponentPopupMenu(createPopupMenu());
     }
 
+    public void stopCheckUpdatingFile() {
+        timerCheckUpdating.stop();
+    }
+
+    public void saveText() {
+        try {
+            //String filePath = fil;
+            if (filePath != null && filePath.exists() && filePath.isFile()) {
+                if (fileName.endsWith(".rtf")) {
+                    exportToRtf();
+                } else if (fileName.endsWith(".md")) {
+                    exportToMd();
+                } else {
+                    UFileService.saveFile(filePath.getPath(), getText());
+                }
+                titleTab.setForeground(Color.WHITE);
+                try {
+                    lastModifiedTime = Files.getLastModifiedTime(Paths.get(filePath.getPath()));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        } catch (CannotRedoException e) {
+            //e.printStackTrace();
+        }
+    }
+
     protected void exportToRtf() {
+        replaceImagesToLinks();
         StyledDocument doc = (StyledDocument) getDocument();
         RTFEditorKit kit = new RTFEditorKit();
 
@@ -150,11 +165,47 @@ public class UTextPane extends JTextPane {
             out.close();
         } catch (IOException | BadLocationException ignored) {
         }
+        findImages();
     }
 
+    private void replaceImagesToLinks() {
+        StyledDocument doc = getStyledDocument();
+        String text;
+        try {
+            text = doc.getText(0, doc.getLength());
+        } catch (BadLocationException e) {
+            throw new RuntimeException(e);
+        }
+
+        int length = doc.getLength();
+        for (int i = length - 1; i >= 0; i--) {
+            Element element = doc.getCharacterElement(i);
+            AttributeSet attrs = element.getAttributes();
+            if (text.charAt(i) == '~') {
+                if (attrs.containsAttribute(StyleConstants.NameAttribute, StyleConstants.IconElementName)) {
+                    Object value = attrs.getAttribute(StyleConstants.IconElementName);
+                    for (Iterator<?> it = attrs.getAttributeNames().asIterator(); it.hasNext(); ) {
+                        var at = it.next();
+                        if (at.toString().equals("icon")) {
+                            value = attrs.getAttribute(at);
+                        }
+                    }
+                    try {
+                        doc.remove(i, 1);
+                        doc.insertString(i, linksImagesDictionary.get(value), new SimpleAttributeSet());
+                    } catch (BadLocationException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        }
+    }
+
+    Dictionary<ImageIcon, String> linksImagesDictionary = new Hashtable<>();
+
     private void readRtfFile() {
-        //setContentType("text/rtf");
-        setContentType("text/html");
+        setContentType("text/rtf");
+        //setContentType("text/html");
         setDocument(new HTMLDocument());
 
         RTFEditorKit kit = new RTFEditorKit();
@@ -167,6 +218,80 @@ public class UTextPane extends JTextPane {
             out.close();
         } catch (IOException | BadLocationException ignored) {
         }
+        findImages();
+    }
+
+    //Функция находит в файле ссылки на изображения и вставляет их в документ
+    private void findImages() {
+        String text = null;
+        try {
+            text = getDocument().getText(0, getDocument().getLength());
+        } catch (BadLocationException e) {
+            throw new RuntimeException(e);
+        }
+        // Регулярное выражение для поиска изображений в формате Markdown
+        Pattern pattern = Pattern.compile("!\\[(.*?)]\\((.*?)\\)");
+        Matcher matcher = pattern.matcher(text);
+
+        int accumulator = 0;
+        while (matcher.find()) {
+            try {
+                getDocument().remove(matcher.start() - accumulator, matcher.end() - matcher.start());
+                ImageIcon image;
+                Pattern pattern1 = Pattern.compile("(\b*?)x(\b*?)");
+                Matcher matcher1 = pattern1.matcher(matcher.group(1));
+                if (matcher1.find()) {
+                    String textSize = matcher.group(1);
+                    int width = Integer.parseInt(textSize.substring(0, textSize.indexOf('x')));
+                    int height = Integer.parseInt(textSize.substring(textSize.indexOf('x') + 1));
+                    image = getResizedImage(matcher.group(2), width, height);
+                } else {
+                    //image = new ImageIcon(matcher.group(2));
+                    image = loadImage(matcher.group(2));
+                }
+                addImage(image, matcher.start() - accumulator);
+                linksImagesDictionary.put(image, matcher.group());
+                accumulator += matcher.end() - matcher.start();
+                accumulator--;
+            } catch (BadLocationException e) {
+                throw new RuntimeException(e);
+            }
+            //System.out.println("Image description: " + matcher.group(1));
+            //System.out.println("Image URL: " + matcher.group(2));
+        }
+    }
+
+
+    Dictionary<String, ImageIcon> pathsImagesDictionary = new Hashtable<>();
+    private ImageIcon loadImage(String path) {
+        ImageIcon image = pathsImagesDictionary.get(path);
+        if (image == null) {
+            image = new ImageIcon(path);
+            pathsImagesDictionary.put(path, image);
+        }
+        return image;
+    }
+
+    private ImageIcon getResizedImage(String path, int width, int height) {
+        String mnimoPath = width + "x" + height + "=" + path;
+        ImageIcon image = pathsImagesDictionary.get(mnimoPath);
+        if (image != null) {
+            return image;
+        }
+        File file = new File(path); // Укажите путь к вашему изображению
+        BufferedImage originalImage = null;
+        try {
+            originalImage = ImageIO.read(file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Создаем новое изображение с новыми размерами
+        BufferedImage resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        resizedImage.getGraphics().drawImage(originalImage.getScaledInstance(width, height, Image.SCALE_SMOOTH), 0, 0, null);
+        image = new ImageIcon(resizedImage);
+        pathsImagesDictionary.put(mnimoPath, image);
+        return image;
     }
 
 
@@ -216,6 +341,19 @@ public class UTextPane extends JTextPane {
         AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY,
                 StyleConstants.TabSet, tabset);
         setParagraphAttributes(aset, false);
+    }
+
+    private void addImage(ImageIcon imageIcon, int index) {
+        try {
+            StyledDocument doc = getStyledDocument();
+            Style style = doc.addStyle(StyleConstants.IconElementName, null);
+            StyleConstants.setAlignment(style, StyleConstants.ALIGN_CENTER); // Выравнивание по центру
+            StyleConstants.setIcon(style, imageIcon);
+
+            doc.insertString(index, "~", style); // Добавляем строку с изображением
+        } catch (BadLocationException e) {
+            e.printStackTrace(); // Обработка исключения
+        }
     }
 
 
@@ -418,6 +556,28 @@ public class UTextPane extends JTextPane {
 
     public void setTitleTab(JLabel titleTab) {
         this.titleTab = titleTab;
+    }
+
+    public static DefaultStyledDocument cloneStyledDoc(StyledDocument source) {
+        try {
+            DefaultStyledDocument retDoc = new DefaultStyledDocument();
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(source); // write object to byte stream
+
+            ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray() );
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            retDoc = (DefaultStyledDocument) ois.readObject(); //read object from stream
+            ois.close();
+            return retDoc;
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 //    @Override

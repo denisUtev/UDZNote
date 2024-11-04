@@ -71,13 +71,16 @@ public class UDZNote {
         JScrollPane scrollPane = new JScrollPane(textPane);
         scrollPane.setBackground(new Color(0, 0, 0, 0));
         scrollPane.setBorder(null);
+        textPane.setCaretPosition(0);
 
         nameTab = getShortedTitle(nameTab);
         JLabel titleTab = new JLabel(nameTab);
         titleTab.setFont(Params.TAB_TITLE_FONT);
         textPane.setTitleTab(titleTab);
         titleTab.setForeground(Color.WHITE);
-        addTab(nameTab, scrollPane, titleTab);
+
+        ButtonTabComponent tabComponent = new ButtonTabComponent(tabbedPane, titleTab, textPane);
+        addTab(nameTab, scrollPane, tabComponent);
     }
 
     private static String getShortedTitle(String title) {
@@ -91,11 +94,11 @@ public class UDZNote {
         return titleBuilder.toString();
     }
 
-    public static void addTab(String title, JComponent contentPanel, JLabel nameTab){
+    public static void addTab(String title, JComponent contentPanel, ButtonTabComponent tabComponent){
         tabbedPane.addTab(title, contentPanel);
         //JLabel name = new JLabel(title);
         //name.setFont(Params.TAB_TITLE_FONT);
-        tabbedPane.setTabComponentAt(tabbedPane.getTabCount() - 1, new ButtonTabComponent(tabbedPane, nameTab));
+        tabbedPane.setTabComponentAt(tabbedPane.getTabCount() - 1, tabComponent);
     }
 
     public static void openFile(String path) {
@@ -132,7 +135,9 @@ public class UDZNote {
         JLabel titleTab = new JLabel(nameTab);
         titleTab.setFont(Params.TAB_TITLE_FONT);
         titleTab.setForeground(Color.WHITE);
-        addTab(nameTab, scrollPane, titleTab);
+
+        ButtonTabComponent tabComponent = new ButtonTabComponent(tabbedPane, titleTab, null);
+        addTab(nameTab, scrollPane, tabComponent);
     }
 
     public static JFrame getMainFrame() {

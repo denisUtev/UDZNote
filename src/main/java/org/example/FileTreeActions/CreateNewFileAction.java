@@ -5,7 +5,7 @@ import org.example.FileTree;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-public class CreateNewFileAction  extends AbstractAction {
+public class CreateNewFileAction extends AbstractAction {
 
     private final FileTree fileTree;
 

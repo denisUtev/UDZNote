@@ -1,11 +1,15 @@
 package org.example;
 
+import org.example.TabPaneActions.SaveTabAction;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.util.Optional;
 
@@ -17,6 +21,8 @@ public class DnDTabbedPane extends JTabbedPane {
     private final Color lineColor = new Color(0, 100, 255);
     private int dragTabIndex = -1;
 
+    private ButtonTabComponent choosingTab;
+
     private void clickArrowButton(String actionKey) {
         ActionMap map = getActionMap();
         if(map != null) {
@@ -27,6 +33,11 @@ public class DnDTabbedPane extends JTabbedPane {
             }
         }
     }
+
+    public void setChoosingTab(ButtonTabComponent tab) {
+        choosingTab = tab;
+    }
+
     //private static Rectangle rBackward = new Rectangle();
     //private static Rectangle rForward  = new Rectangle();
     private static int rwh = 20;
@@ -55,8 +66,69 @@ public class DnDTabbedPane extends JTabbedPane {
 //            clickArrowButton("scrollTabsForwardAction");
 //        }
     }
+
+    private JPopupMenu createPopupMenu() {
+        JPopupMenu pm = new JPopupMenu();
+        JMenuItem saveTabAction = new JMenuItem(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (choosingTab != null) {
+                    choosingTab.saveTab();
+                }
+            }
+        });
+        saveTabAction.setText("Save     ");
+        JMenuItem copyPath = new JMenuItem(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (choosingTab != null) {
+                    choosingTab.copyPathToClipboard();
+                }
+            }
+        });
+        copyPath.setText("Copy path");
+        pm.add(saveTabAction);
+        pm.add(copyPath);
+        return pm;
+    }
+
     public DnDTabbedPane(int x, int y) {
         super(x, y);
+
+        addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int tabIndex = indexAtLocation(e.getX(), e.getY());
+                if (tabIndex != -1) {
+                    setChoosingTab((ButtonTabComponent) getTabComponentAt(tabIndex));
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                int tabIndex = indexAtLocation(e.getX(), e.getY());
+                if (tabIndex != -1) {
+                    setChoosingTab((ButtonTabComponent) getTabComponentAt(tabIndex));
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                int tabIndex = indexAtLocation(e.getX(), e.getY());
+                if (tabIndex != -1) {
+                    setChoosingTab((ButtonTabComponent) getTabComponentAt(tabIndex));
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+
+            @Override
+            public void mouseExited(MouseEvent e) {}
+        });
+
+
+        setComponentPopupMenu(createPopupMenu());
         final DragSourceListener dsl = new DragSourceListener() {
             @Override public void dragEnter(DragSourceDragEvent e) {
                 e.getDragSourceContext().setCursor(DragSource.DefaultMoveDrop);
