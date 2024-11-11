@@ -68,7 +68,7 @@ public class FileTree extends JScrollPane {
             StringBuilder allPath = new StringBuilder(rootFile.getPath());
             var nodes = node.getPath();
             for (int i = 1; i < nodes.length; i++) {
-                allPath.append("/");
+                allPath.append(File.separator);
                 allPath.append(nodes[i]);
             }
             choosedPath = allPath.toString();

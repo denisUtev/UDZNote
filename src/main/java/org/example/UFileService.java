@@ -1,6 +1,9 @@
 package org.example;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -142,5 +145,39 @@ public class UFileService {
             // File was not successfully renamed
             JOptionPane.showMessageDialog(UDZNote.getMainFrame(), "По какой-то причине файл переименовать не получилось");
         }
+    }
+
+    public static void saveImage(ImageIcon image, String path) {
+        File outputFile = new File(path);
+        try {
+            ImageIO.write(toBufferedImage(image.getImage()), getExtension(path), outputFile);
+            //System.out.println("Success saving!\t" + path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private static BufferedImage toBufferedImage(Image img) {
+        if (img instanceof BufferedImage) {
+            return (BufferedImage) img;
+        }
+
+        // Создаем новое пустое изображение с теми же размерами
+        BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_RGB);
+
+        // Копируем содержимое исходного изображения в новое
+        bimage.getGraphics().drawImage(img, 0, 0, null);
+
+        return bimage;
+    }
+
+    public static String getExtension(String filePath) {
+        String extension = "";
+        int i = filePath.lastIndexOf('.');
+        if (i > 0) {
+            extension = filePath.substring(i + 1);
+        }
+        return extension;
     }
 }

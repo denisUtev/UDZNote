@@ -1,11 +1,16 @@
 package org.example;
 
 import org.example.FileTreeActions.UFileService;
+import org.example.TextPaneActions.PasteImageAction;
 import org.jpedal.examples.viewer.Commands;
 import org.jpedal.examples.viewer.Viewer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDropEvent;
 import java.io.File;
 
 import static org.example.Params.initFonts;
@@ -19,11 +24,13 @@ public class UDZNote {
 
     public static String WORKING_DIR;
     public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2";
+    public static String IMAGE_DIRECTORY = "-";
     //public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\База знаний";
 
     public UDZNote() {
         WORKING_DIR = System.getProperty("user.dir");
         initFonts(WORKING_DIR);
+        checkImageDirectory();
         //ROOT_PATH = WORKING_DIR + File.separator + "data" + File.separator;
 
         initMainFrame();
@@ -33,9 +40,17 @@ public class UDZNote {
         initSplitPane();
     }
 
+    private void checkImageDirectory() {
+        IMAGE_DIRECTORY = WORKING_DIR + File.separator + "data" + File.separator + "imageDirectory";
+        File file = new File(IMAGE_DIRECTORY);
+        if (!file.exists() || !file.isDirectory()) {
+            UFileService.createPackage(IMAGE_DIRECTORY);
+        }
+    }
+
     private void initMainFrame() {
         mainFrame = new JFrame("UDZNote");
-        mainFrame.setSize(650, 550);
+        mainFrame.setSize(800, 550);
         mainFrame.setDefaultCloseOperation(mainFrame.EXIT_ON_CLOSE);
         mainFrame.setTitle("UDZNote");
         mainFrame.setVisible(true);
@@ -79,6 +94,22 @@ public class UDZNote {
         textPane.setTitleTab(titleTab);
         titleTab.setForeground(Color.WHITE);
 
+        textPane.setDropTarget(new DropTarget() {
+            public synchronized void drop(DropTargetDropEvent evt) {
+                try {
+                    evt.acceptDrop(DnDConstants.ACTION_COPY);
+                    java.util.List<File> droppedFiles = (java.util.List<File>)
+                            evt.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                    for (File file : droppedFiles) {
+                        new PasteImageAction(textPane, new ImageIcon(file.getPath()));
+                    }
+                    evt.dropComplete(true);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
         ButtonTabComponent tabComponent = new ButtonTabComponent(tabbedPane, titleTab, textPane);
         addTab(nameTab, scrollPane, tabComponent);
     }
@@ -104,11 +135,7 @@ public class UDZNote {
     public static void openFile(String path) {
         String title = new File(path).getName();
         String text = UFileService.loadFile(path);
-        String extension = "";
-        int i = path.lastIndexOf('.');
-        if (i > 0) {
-            extension = path.substring(i + 1);
-        }
+        String extension = org.example.UFileService.getExtension(path);
         if (extension.equals("pdf")) {
             openPdfFile(title, path);
         } else {

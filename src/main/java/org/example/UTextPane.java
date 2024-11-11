@@ -2,10 +2,11 @@ package org.example;
 
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
-import org.example.TextPaneActions.ExportMdFile;
+import org.example.TextPaneActions.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.text.*;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.rtf.RTFEditorKit;
@@ -13,18 +14,20 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
+import java.awt.List;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,10 +40,13 @@ public class UTextPane extends JTextPane {
     public File filePath;
     public String fileName;
     private Timer timerCheckUpdating;
+    private JPopupMenu imagePopup;
+    private JPopupMenu popupMenu;
 
     public final static String UNDO_ACTION = "Undo";
     public final static String REDO_ACTION = "Redo";
     public final static String SAVE_ACTION = "Save";
+    public final static String PASTE_ACTION = "Paste";
     public final static String CHOOSE_STYLE_ACTION = "Set style";
     private boolean isChooseStyle = false;//Включен ли выбор стилизирования текста
 
@@ -64,6 +70,7 @@ public class UTextPane extends JTextPane {
         setSettings();
     }
 
+
     public void setSettings() {
         setTabSize(22);
         getDocument().addUndoableEditListener(pEvt -> {
@@ -72,6 +79,7 @@ public class UTextPane extends JTextPane {
                 titleTab.setForeground(new Color(35, 135, 204));
             }
         });
+
         // Add undo/redo actions
         getActionMap().put(UNDO_ACTION, new AbstractAction(UNDO_ACTION) {
             public void actionPerformed(ActionEvent pEvt) {
@@ -103,6 +111,47 @@ public class UTextPane extends JTextPane {
                 saveText();
             }
         });
+        getActionMap().put(PASTE_ACTION, new AbstractAction(PASTE_ACTION) {
+            public void actionPerformed(ActionEvent pEvt) {
+                // Получаем доступ к системному буферу обмена
+                Toolkit toolkit = Toolkit.getDefaultToolkit();
+                Clipboard clipboard = toolkit.getSystemClipboard();
+
+                Transferable contents = clipboard.getContents(null);
+
+                // Проверяем, есть ли изображение в буфере обмена
+                if (clipboard.isDataFlavorAvailable(DataFlavor.imageFlavor)) {
+                    BufferedImage image = null;
+                    try {
+                        image = (BufferedImage) clipboard.getData(DataFlavor.imageFlavor);
+                        ImageIcon icon = new ImageIcon(image);
+                        new PasteImageAction(UTextPane.this, icon);
+                    } catch (IOException | UnsupportedFlavorException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else if (contents.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                    try {
+                        java.util.List<File> files = (java.util.List<File>) contents.getTransferData(DataFlavor.javaFileListFlavor);
+                        if (!files.isEmpty()) {
+                            File firstFile = files.get(0);
+                            ImageIcon icon = new ImageIcon(String.valueOf(firstFile));
+                            new PasteImageAction(UTextPane.this, icon);
+                        }
+                    } catch (UnsupportedFlavorException | IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    try {
+                        String text = (String) clipboard.getData(DataFlavor.stringFlavor);
+                        getDocument().insertString(getCaretPosition(), text, new SimpleAttributeSet());
+                    } catch (UnsupportedFlavorException | IOException ex) {
+                        ex.printStackTrace(); // Обрабатываем возможные исключения
+                    } catch (BadLocationException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
+        });
 
         getActionMap().put(CHOOSE_STYLE_ACTION, new AbstractAction(CHOOSE_STYLE_ACTION) {
             public void actionPerformed(ActionEvent pEvt) {
@@ -118,11 +167,95 @@ public class UTextPane extends JTextPane {
                 SAVE_ACTION);
         getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK),
                 SAVE_ACTION);
+        getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK),
+                PASTE_ACTION);
 
         timerCheckUpdating = new Timer(3000, e -> checkUpdatesFile());
         timerCheckUpdating.start();
 
         setComponentPopupMenu(createPopupMenu());
+        initImagePopup();
+    }
+
+    boolean isImagePopupMenu = false;
+    Element selectedImageElement;
+    int selectedImageElementPosition = -1;
+    private void initImagePopup() {
+        // Создание контекстного меню для изображений
+        imagePopup = new JPopupMenu();
+        JMenuItem changeImageItem = new JMenuItem("edit image");
+        changeImageItem.addActionListener(e -> changeImage());
+        imagePopup.add(changeImageItem);
+        Component separator = new JPopupMenu.Separator();
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    showContextMenu(e);
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+            }
+
+            private void showContextMenu(MouseEvent e) {
+                int pos = viewToModel2D(e.getPoint());
+                if (pos >= 0) {
+                    StyledDocument doc = getStyledDocument();
+                    Element element = doc.getCharacterElement(pos);
+                    Element element2 = doc.getCharacterElement(pos - 1);
+                    boolean isImageSelected = false;
+                    if (isDocElementHasStyle(element, StyleConstants.IconElementName)) {
+                        selectedImageElement = element;
+                        selectedImageElementPosition = pos;
+                        isImageSelected = true;
+                    }
+                    if (isDocElementHasStyle(element2, StyleConstants.IconElementName)) {
+                        selectedImageElement = element2;
+                        selectedImageElementPosition = pos - 1;
+                        isImageSelected = true;
+                    }
+                    if (isImageSelected) {
+                        popupMenu.add(separator);
+                        popupMenu.add(changeImageItem);
+                        isImagePopupMenu = true;
+                    } else if (isImagePopupMenu) {
+                        isImagePopupMenu = false;
+                        popupMenu.remove(changeImageItem);
+                        popupMenu.remove(separator);
+                    }
+                }
+            }
+        });
+    }
+
+    private void changeImage() {
+        AttributeSet attrs = selectedImageElement.getAttributes();
+        Object value = attrs.getAttribute(StyleConstants.IconElementName);
+        for (Iterator<?> it = attrs.getAttributeNames().asIterator(); it.hasNext(); ) {
+            var at = it.next();
+            if (at.toString().equals("icon")) {
+                value = attrs.getAttribute(at);
+            }
+        }
+
+        String linkImage = linksImagesDictionary.get(value);
+        int width = -1;
+        int height = -1;
+        Pattern pattern = Pattern.compile("!\\[(.*?)]\\((.*?)\\)");
+        Matcher matcher = pattern.matcher(linkImage);
+        if (matcher.find()) {
+            Pattern pattern1 = Pattern.compile("(\\d+)x(\\d+)");
+            Matcher matcher1 = pattern1.matcher(matcher.group(1));
+            if (matcher1.find()) {
+                String textSize = matcher.group(1);
+                width = Integer.parseInt(textSize.substring(0, textSize.indexOf('x')));
+                height = Integer.parseInt(textSize.substring(textSize.indexOf('x') + 1));
+            }
+            new EditImageAction(this, (ImageIcon) value, matcher.group(2), width, height, selectedImageElementPosition);
+        }
     }
 
     public void stopCheckUpdatingFile() {
@@ -154,6 +287,7 @@ public class UTextPane extends JTextPane {
 
     protected void exportToRtf() {
         replaceImagesToLinks();
+        replaceButtonsWithMarkdownLinks();
         StyledDocument doc = (StyledDocument) getDocument();
         RTFEditorKit kit = new RTFEditorKit();
 
@@ -165,7 +299,7 @@ public class UTextPane extends JTextPane {
             out.close();
         } catch (IOException | BadLocationException ignored) {
         }
-        findImages();
+        updateDocumentView();
     }
 
     private void replaceImagesToLinks() {
@@ -201,6 +335,11 @@ public class UTextPane extends JTextPane {
         }
     }
 
+    private boolean isDocElementHasStyle(Element element, String styleName) {
+        AttributeSet attrs = element.getAttributes();
+        return attrs.containsAttribute(StyleConstants.NameAttribute, styleName);
+    }
+
     Dictionary<ImageIcon, String> linksImagesDictionary = new Hashtable<>();
 
     private void readRtfFile() {
@@ -218,8 +357,97 @@ public class UTextPane extends JTextPane {
             out.close();
         } catch (IOException | BadLocationException ignored) {
         }
-        findImages();
+        updateDocumentView();
     }
+
+
+    Dictionary<JButton, String> linksButtonsDictionary = new Hashtable<>();
+    public void insertMarkdownLinks() {
+        StyledDocument doc = getStyledDocument();
+        String text = null;
+        try {
+            text = doc.getText(0, doc.getLength());
+        } catch (BadLocationException e) {
+            throw new RuntimeException(e);
+        }
+        Pattern pattern = Pattern.compile("\\[(.*?)]\\((.*?)\\)");  // Регулярное выражение для поиска ссылок в формате [текст](ссылка)
+        Matcher matcher = pattern.matcher(text);
+        int accumulator = 0;
+
+        while (matcher.find()) {
+            // Создаем кнопку с текстом ссылки
+            String linkText = matcher.group(1);  // Текст ссылки
+            String url = matcher.group(2);       // URL ссылки
+            JButton linkButton = createLinkButton(linkText, url);
+            linksButtonsDictionary.put(linkButton, url);
+
+            // Вставляем кнопку в документ
+            try {
+                getDocument().remove(matcher.start() - accumulator, matcher.end() - matcher.start());
+                setCaretPosition(matcher.start() - accumulator);
+                insertComponent(linkButton);
+                accumulator += matcher.end() - matcher.start();
+                accumulator--;
+            } catch (BadLocationException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private static JButton createLinkButton(String text, String url) {
+        JButton button = new JButton(text);
+        button.setAlignmentY(0.8f);
+
+        // Действие при нажатии на кнопку
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //System.out.println("Link clicked: " + url);
+                if (Desktop.isDesktopSupported()) {
+                    Desktop desktop = Desktop.getDesktop();
+                    if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                        URI uri = null;
+                        try {
+                            uri = new URI(url);
+                            desktop.browse(uri);
+                        } catch (URISyntaxException | IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    } else {
+                        System.err.println("Открытие браузера не поддерживается.");
+                    }
+                } else {
+                    System.err.println("Рабочий стол не поддерживается.");
+                }
+                // Здесь можно добавить переход по ссылке или другое действие
+            }
+        });
+
+        return button;
+    }
+
+
+    public void replaceButtonsWithMarkdownLinks() {
+        StyledDocument doc = getStyledDocument();
+
+        for (int i = 0; i < doc.getLength(); i++) {
+            try {
+                Element element = doc.getCharacterElement(i);
+                AttributeSet attrs = element.getAttributes();
+                if (StyleConstants.getComponent(attrs) instanceof JButton) {
+                    JButton button = (JButton) StyleConstants.getComponent(attrs);
+                    String buttonText = button.getText();
+                    String url = linksButtonsDictionary.get(button); // Здесь можно установить URL, если он сохранен с кнопкой
+
+                    getDocument().remove(i, 1);
+                    getDocument().insertString(i, String.format("[%s](%s)", buttonText, url), new SimpleAttributeSet());
+                }
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     //Функция находит в файле ссылки на изображения и вставляет их в документ
     private void findImages() {
@@ -238,7 +466,7 @@ public class UTextPane extends JTextPane {
             try {
                 getDocument().remove(matcher.start() - accumulator, matcher.end() - matcher.start());
                 ImageIcon image;
-                Pattern pattern1 = Pattern.compile("(\b*?)x(\b*?)");
+                Pattern pattern1 = Pattern.compile("(\\d+)x(\\d+)");
                 Matcher matcher1 = pattern1.matcher(matcher.group(1));
                 if (matcher1.find()) {
                     String textSize = matcher.group(1);
@@ -246,7 +474,6 @@ public class UTextPane extends JTextPane {
                     int height = Integer.parseInt(textSize.substring(textSize.indexOf('x') + 1));
                     image = getResizedImage(matcher.group(2), width, height);
                 } else {
-                    //image = new ImageIcon(matcher.group(2));
                     image = loadImage(matcher.group(2));
                 }
                 addImage(image, matcher.start() - accumulator);
@@ -256,9 +483,12 @@ public class UTextPane extends JTextPane {
             } catch (BadLocationException e) {
                 throw new RuntimeException(e);
             }
-            //System.out.println("Image description: " + matcher.group(1));
-            //System.out.println("Image URL: " + matcher.group(2));
         }
+    }
+
+    public void updateDocumentView() {
+        findImages();
+        insertMarkdownLinks();
     }
 
 
@@ -359,7 +589,7 @@ public class UTextPane extends JTextPane {
 
 
     private JPopupMenu createPopupMenu() {
-        JPopupMenu pmenu = new JPopupMenu("Menu");
+        popupMenu = new JPopupMenu("Menu");
 
         JMenu headersMenu = new JMenu("Headers   ");
         JMenuItem header1 = getHeaderMenuItem("H1", 40);
@@ -369,7 +599,7 @@ public class UTextPane extends JTextPane {
         JMenuItem header3 = getHeaderMenuItem("H3", 26);
         headersMenu.add(header3);
 
-        pmenu.add(headersMenu);
+        popupMenu.add(headersMenu);
 
         JMenu stylesMenu = new JMenu("Styles   ");
         JMenuItem style1 = getBoldMenuItem();
@@ -379,7 +609,7 @@ public class UTextPane extends JTextPane {
         JMenuItem style3 = getPastMenuItem();
         stylesMenu.add(style3);
 
-        pmenu.add(stylesMenu);
+        popupMenu.add(stylesMenu);
 
         JMenu colorsMenu = new JMenu("Colors   ");
         JMenuItem color1 = getColorMenuItem(Color.BLACK, "black");
@@ -399,7 +629,7 @@ public class UTextPane extends JTextPane {
         JMenuItem color8 = getColorMenuItem(Color.WHITE, "white");
         colorsMenu.add(color8);
 
-        pmenu.add(colorsMenu);
+        popupMenu.add(colorsMenu);
 
         JMenu alginmentMenu = new JMenu("Alignment");
         JMenuItem algign1 = getAlignLeftMenuItem();
@@ -411,9 +641,24 @@ public class UTextPane extends JTextPane {
         JMenuItem algign4 = getAlignJustifiedMenuItem();
         alginmentMenu.add(algign4);
 
-        pmenu.add(alginmentMenu);
+        popupMenu.add(alginmentMenu);
 
-        return pmenu;
+        JMenuItem addImage = new JMenuItem("Add image ");
+        addImage.setAction(new AddImageAction(this));
+        addImage.setText("Add image ");
+        popupMenu.add(addImage);
+
+        JMenuItem addLink = getSetLinkItem();
+        popupMenu.add(addLink);
+
+        return popupMenu;
+    }
+
+    private JMenuItem getSetLinkItem() {
+        JMenuItem setLink = new JMenuItem("Add link  ");
+        setLink.setAction(new AddLinkAction(this));
+        setLink.setText("Add link  ");
+        return setLink;
     }
 
     private JMenuItem getHeaderMenuItem(String name, int fontSize) {
@@ -439,6 +684,7 @@ public class UTextPane extends JTextPane {
                 StyleConstants.setFontSize(headerStyle, 18);
                 StyleConstants.setItalic(headerStyle, false);
                 StyleConstants.setBold(headerStyle, false);
+                StyleConstants.setUnderline(headerStyle, false);
                 StyledDocument doc = getStyledDocument();
                 doc.setCharacterAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), headerStyle, false);
                 titleTab.setForeground(new Color(35, 135, 204));
