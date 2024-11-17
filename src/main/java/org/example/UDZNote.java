@@ -1,9 +1,8 @@
 package org.example;
 
 import org.example.FileTreeActions.UFileService;
+import org.example.PDFPanel.PDFViewerPanel;
 import org.example.TextPaneActions.PasteImageAction;
-import org.jpedal.examples.viewer.Commands;
-import org.jpedal.examples.viewer.Viewer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,6 +11,7 @@ import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
 import java.io.File;
+import java.io.IOException;
 
 import static org.example.Params.initFonts;
 
@@ -147,16 +147,21 @@ public class UDZNote {
     }
 
     private static void openPdfFile(String nameTab, String path) {
-        JPanel scrollPane = new JPanel();
+        File pdfFile = new File(path);
+        PDFViewerPanel pdfViewer = null;
+        try {
+            pdfViewer = new PDFViewerPanel(pdfFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        JPanel allPanel = new JPanel(new BorderLayout());
+        allPanel.add(pdfViewer.createControlPanel(), BorderLayout.NORTH);
+
+        JScrollPane scrollPane = new JScrollPane(pdfViewer);
         scrollPane.setBackground(new Color(0, 0, 0, 0));
         scrollPane.setBorder(null);
-
-        Viewer viewer = new Viewer(scrollPane, Params.pdfPropertiesPath);
-        viewer.setupViewer();
-        viewer.executeCommand(Commands.OPENFILE, new Object[]{ path });
-
-        //add viewer to your application
-        mainFrame.add(scrollPane, BorderLayout.CENTER);
+        allPanel.add(scrollPane, BorderLayout.CENTER);
 
         nameTab = getShortedTitle(nameTab);
         JLabel titleTab = new JLabel(nameTab);
@@ -164,7 +169,8 @@ public class UDZNote {
         titleTab.setForeground(Color.WHITE);
 
         ButtonTabComponent tabComponent = new ButtonTabComponent(tabbedPane, titleTab, null);
-        addTab(nameTab, scrollPane, tabComponent);
+        tabComponent.setPDFViewerPanel(pdfViewer);
+        addTab(nameTab, allPanel, tabComponent);
     }
 
     public static JFrame getMainFrame() {

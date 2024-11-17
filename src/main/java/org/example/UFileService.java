@@ -155,7 +155,6 @@ public class UFileService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     private static BufferedImage toBufferedImage(Image img) {

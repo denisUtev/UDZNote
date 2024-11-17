@@ -16,7 +16,6 @@ public class AddLinkAction extends AbstractAction {
 
     private final UTextPane parentTextPane;
 
-    // Конструктор принимает основной JFrame для правильного расположения диалогового окна
     public AddLinkAction(UTextPane textPane) {
         super("Add Link");
         parentTextPane = textPane;
@@ -75,7 +74,8 @@ public class AddLinkAction extends AbstractAction {
     private void insertLink(String text, String url) {
         try {
             String description = String.format("[%s](%s)", text, url);
-            parentTextPane.getDocument().insertString(parentTextPane.getCaretPosition(), description, new SimpleAttributeSet());
+            parentTextPane.getDocument().insertString(parentTextPane.getCaretPosition(),
+                    description, new SimpleAttributeSet());
             parentTextPane.updateDocumentView();
         } catch (BadLocationException e) {
             throw new RuntimeException(e);

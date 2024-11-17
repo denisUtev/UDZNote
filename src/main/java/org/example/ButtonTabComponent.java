@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.FileTreeActions.*;
+import org.example.PDFPanel.PDFViewerPanel;
 import org.example.TabPaneActions.SaveTabAction;
 
 import javax.swing.*;
@@ -11,10 +12,12 @@ import javax.swing.tree.MutableTreeNode;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
+import java.io.IOException;
 
 public class ButtonTabComponent extends JPanel {
     protected final DnDTabbedPane pane;
     protected UTextPane textPane;
+    protected PDFViewerPanel pdfViewerPanel;
     protected ButtonTabComponent thisTabComponent = this;
 
     public ButtonTabComponent(final DnDTabbedPane pane, JLabel name, UTextPane textPane) {
@@ -92,6 +95,13 @@ public class ButtonTabComponent extends JPanel {
                 if (textPane != null) {
                     textPane.stopCheckUpdatingFile();
                 }
+                if (pdfViewerPanel != null) {
+                    try {
+                        pdfViewerPanel.closeDocument();
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
                 pane.remove(i);
             }
         }
@@ -137,4 +147,8 @@ public class ButtonTabComponent extends JPanel {
             }
         }
     };
+
+    public void setPDFViewerPanel(PDFViewerPanel pdfViewerPanel) {
+        this.pdfViewerPanel =  pdfViewerPanel;
+    }
 }
