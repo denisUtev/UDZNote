@@ -3,10 +3,13 @@ package org.example;
 import com.github.rjeschke.txtmark.Configuration;
 import com.github.rjeschke.txtmark.Processor;
 import org.example.TextPaneActions.*;
+import org.example.TextPaneComponents.TagButton;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.Timer;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.rtf.RTFEditorKit;
@@ -30,6 +33,8 @@ import java.nio.file.attribute.FileTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.lang.Math.min;
 
 public class UTextPane extends JTextPane {
 
@@ -79,6 +84,23 @@ public class UTextPane extends JTextPane {
                 titleTab.setForeground(new Color(35, 135, 204));
             }
         });
+
+        this.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    replaceHashtagsWithButtons();
+                }
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+                    handleBackspace();
+                }
+            }
+        });
+
 
         // Add undo/redo actions
         getActionMap().put(UNDO_ACTION, new AbstractAction(UNDO_ACTION) {
@@ -176,6 +198,76 @@ public class UTextPane extends JTextPane {
         setComponentPopupMenu(createPopupMenu());
         initImagePopup();
     }
+
+
+    private void replaceHashtagsWithButtons() {
+        var doc = this.getStyledDocument();
+        try {
+            String text = doc.getText(0, doc.getLength());
+
+            // проверяем хештег ли
+            int start = getCaretPosition() - 2;
+            start = getStartTag(text, start);
+            if (text.charAt(start) == '#' && (text.charAt(start - 1) == ' '
+                    || text.charAt(start - 1) == '\n' || text.charAt(start - 1) == '\t')) {
+                int end = getEndTag(text, start + 1);
+                String hashtag = text.substring(start, end);
+                if (!hashtag.trim().isEmpty()) {
+                    // Создаем кнопку для хештега
+                    JButton button = createHashTagButton(hashtag);
+
+                    // Заменяем текст на кнопку
+                    SimpleAttributeSet attrs = new SimpleAttributeSet();
+                    StyleConstants.setComponent(attrs, button);
+
+                    doc.remove(start, end - start);
+                    doc.insertString(start, " ", attrs);
+                }
+            }
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private int getEndTag(String text, int startPos) {
+        String stopChars = "# \n\t.,!?\"'*-+=~`:^%$№;<>\\|/";
+        int end = startPos;
+        while (end < text.length() && stopChars.indexOf(text.charAt(end)) == -1) {
+            end++;
+        }
+        return end;
+    }
+
+    private int getStartTag(String text, int startPos) {
+        String stopChars = "# \n\t.,!?\"'*-+=~`:^%$№;<>\\|/";
+        int start = startPos;
+        while (start >= 0 && stopChars.indexOf(text.charAt(start)) == -1) {
+            start--;
+        }
+        return start;
+    }
+
+    private void handleBackspace() {
+        var doc = this.getStyledDocument();
+        try {
+            int caretPosition = getCaretPosition();
+            if (caretPosition > 0) {
+                Element elem = doc.getCharacterElement(caretPosition - 1);
+                AttributeSet attrs = elem.getAttributes();
+                Component comp = StyleConstants.getComponent(attrs);
+
+                if (comp instanceof TagButton) {
+                    String hashtag = ((JButton) comp).getText();
+                    doc.insertString(caretPosition - 1, hashtag, new SimpleAttributeSet());
+                    setCaretPosition(caretPosition + hashtag.length());
+                }
+            }
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     boolean isImagePopupMenu = false;
     Element selectedImageElement;
@@ -287,6 +379,7 @@ public class UTextPane extends JTextPane {
 
     protected void exportToRtf() {
         replaceImagesToLinks();
+        replaceTagButtons();
         replaceButtonsWithMarkdownLinks();
         StyledDocument doc = (StyledDocument) getDocument();
         RTFEditorKit kit = new RTFEditorKit();
@@ -394,6 +487,36 @@ public class UTextPane extends JTextPane {
         }
     }
 
+    public void insertTagButtons() {
+        StyledDocument doc = getStyledDocument();
+        String text = null;
+        try {
+            text = doc.getText(0, doc.getLength());
+        } catch (BadLocationException e) {
+            throw new RuntimeException(e);
+        }
+        Pattern pattern = Pattern.compile("#[\\p{L}_]+");
+        Matcher matcher = pattern.matcher(text);
+        int accumulator = 0;
+
+        while (matcher.find()) {
+            // Создаем кнопку с текстом ссылки
+            String tagText = matcher.group();
+            JButton linkButton = createHashTagButton(tagText);
+
+            // Вставляем кнопку в документ
+            try {
+                getDocument().remove(matcher.start() - accumulator, matcher.end() - matcher.start());
+                setCaretPosition(matcher.start() - accumulator);
+                insertComponent(linkButton);
+                accumulator += matcher.end() - matcher.start();
+                accumulator--;
+            } catch (BadLocationException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     private static JButton createLinkButton(String text, String url) {
         JButton button = new JButton(text);
         button.setAlignmentY(0.8f);
@@ -426,6 +549,39 @@ public class UTextPane extends JTextPane {
         return button;
     }
 
+    private static TagButton createHashTagButton(String tag) {
+        TagButton button = new TagButton(tag);
+
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+
+        return button;
+    }
+
+
+    public void replaceTagButtons() {
+        StyledDocument doc = getStyledDocument();
+
+        for (int i = 0; i < doc.getLength(); i++) {
+            try {
+                Element element = doc.getCharacterElement(i);
+                AttributeSet attrs = element.getAttributes();
+                if (StyleConstants.getComponent(attrs) instanceof TagButton) {
+                    JButton button = (JButton) StyleConstants.getComponent(attrs);
+                    String buttonText = button.getText();
+
+                    getDocument().remove(i, 1);
+                    getDocument().insertString(i, buttonText, new SimpleAttributeSet());
+                }
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public void replaceButtonsWithMarkdownLinks() {
         StyledDocument doc = getStyledDocument();
@@ -488,6 +644,7 @@ public class UTextPane extends JTextPane {
 
     public void updateDocumentView() {
         findImages();
+        insertTagButtons();
         insertMarkdownLinks();
     }
 

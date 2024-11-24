@@ -12,6 +12,7 @@ import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static org.example.Params.initFonts;
 
@@ -20,7 +21,7 @@ public class UDZNote {
     private static JFrame mainFrame;
     private JSplitPane splitPane;
     private LeftPanel leftPanel;
-    private static DnDTabbedPane tabbedPane;
+    public static DnDTabbedPane tabbedPane;
 
     public static String WORKING_DIR;
     public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2";
@@ -59,6 +60,7 @@ public class UDZNote {
         //frame.pack();
         mainFrame.setVisible(true);
     }
+
 
     private void initSplitPane() {
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
