@@ -59,8 +59,44 @@ public class UDZNote {
         //Display the window.
         //frame.pack();
         mainFrame.setVisible(true);
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            onExit();
+            throwable.printStackTrace();
+        });
     }
 
+    public void onExit() {
+        var textFields = findAllTextFields(tabbedPane);
+        for (UTextPane textPane : textFields) {
+            try {
+                textPane.saveText();
+            } catch (Exception e) {
+                JOptionPane.showConfirmDialog(mainFrame, "Произошла ошибка при сохранении файла " + textPane.fileName, "Подтверждение выхода",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            }
+        }
+        int result = JOptionPane.showConfirmDialog(mainFrame, "Произошла ошибка работы программы", "Подтверждение выхода",
+                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (result == JOptionPane.YES_OPTION) {
+            mainFrame.dispose(); // Закрываем окно
+            System.exit(0); // Завершаем программу
+        }
+    }
+
+    private ArrayList<UTextPane> findAllTextFields(Component component) {
+        ArrayList<UTextPane> fields = new ArrayList<>();
+        if (component instanceof Container) {
+            Component[] children = ((Container) component).getComponents();
+            for (Component child : children) {
+                if (child instanceof UTextPane) {
+                    fields.add((UTextPane) child);
+                } else {
+                    fields.addAll(findAllTextFields(child));
+                }
+            }
+        }
+        return fields;
+    }
 
     private void initSplitPane() {
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
