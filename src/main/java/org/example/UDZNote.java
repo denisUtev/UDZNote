@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.CardPanel.CardPanel;
 import org.example.FileTreeActions.UFileService;
 import org.example.PDFPanel.PDFViewerPanel;
 import org.example.TextPaneActions.PasteImageAction;
@@ -39,6 +40,8 @@ public class UDZNote {
         initLeftPanel();
         initTabbedPane();
         initSplitPane();
+
+        createPreviewTab();
     }
 
     private void checkImageDirectory() {
@@ -115,6 +118,45 @@ public class UDZNote {
         tabbedPane.setFont(Params.BIG_TAB_TITLE_FONT);
     }
 
+    private void createPreviewTab() {
+        CardPanel cardPanel = new CardPanel(30, 200, 250, 12);
+        cardPanel.setDataForCards(org.example.UFileService.getFiles(ROOT_PATH));
+
+        JScrollPane scrollPane = new JScrollPane(cardPanel);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollPane.setBackground(new Color(0, 0, 0, 0));
+        scrollPane.setBorder(null);
+
+        String nameTab = "Preview";
+        JLabel titleTab = new JLabel(nameTab);
+        titleTab.setFont(Params.TAB_TITLE_FONT);
+        titleTab.setForeground(Color.WHITE);
+
+        ButtonEditorTabComponent tabComponent = new ButtonEditorTabComponent(tabbedPane, titleTab, null);
+        addTab(nameTab, scrollPane, tabComponent);
+    }
+
+    private ArrayList<File> getNotesWithTags(ArrayList<String> tags, File directory) {
+        ArrayList<File> result = new ArrayList<>();
+        var files = org.example.UFileService.getFiles(directory.getPath());
+        for (var file : files) {
+            if (file.isFile() && !org.example.UFileService.getExtension(file.getPath()).equals("pdf")) {
+                String text = org.example.UFileService.loadFile(file.getPath());
+                boolean flag = true;
+                for (String tag : tags) {
+                    if (!text.contains("#" + tag)) {
+                        flag = false;
+                        break;
+                    }
+                }
+                if (flag) {
+                    result.add(file);
+                }
+            }
+        }
+        return result;
+    }
+
     private static void createTab(String nameTab, String text, String filePath) {
         UTextPane textPane = new UTextPane(nameTab, filePath);
         if (!filePath.endsWith(".md") && !filePath.endsWith(".rtf")) {
@@ -148,7 +190,7 @@ public class UDZNote {
             }
         });
 
-        ButtonTabComponent tabComponent = new ButtonTabComponent(tabbedPane, titleTab, textPane);
+        ButtonEditorTabComponent tabComponent = new ButtonEditorTabComponent(tabbedPane, titleTab, textPane);
         addTab(nameTab, scrollPane, tabComponent);
     }
 
@@ -163,7 +205,7 @@ public class UDZNote {
         return titleBuilder.toString();
     }
 
-    public static void addTab(String title, JComponent contentPanel, ButtonTabComponent tabComponent){
+    public static void addTab(String title, JComponent contentPanel, ButtonEditorTabComponent tabComponent){
         tabbedPane.addTab(title, contentPanel);
         //JLabel name = new JLabel(title);
         //name.setFont(Params.TAB_TITLE_FONT);
@@ -206,7 +248,7 @@ public class UDZNote {
         titleTab.setFont(Params.TAB_TITLE_FONT);
         titleTab.setForeground(Color.WHITE);
 
-        ButtonTabComponent tabComponent = new ButtonTabComponent(tabbedPane, titleTab, null);
+        ButtonEditorTabComponent tabComponent = new ButtonEditorTabComponent(tabbedPane, titleTab, null);
         tabComponent.setPDFViewerPanel(pdfViewer);
         addTab(nameTab, allPanel, tabComponent);
     }

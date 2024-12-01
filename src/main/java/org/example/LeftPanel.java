@@ -3,7 +3,6 @@ package org.example;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 
 public class LeftPanel extends JPanel {
 
@@ -24,6 +23,13 @@ public class LeftPanel extends JPanel {
         button.setText("Settings");
         buttonsPanel.add(button);
         JButton button2 = new JButton("Search");
+        button2.setAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                UDZNote.addTab("Search", new JScrollPane(), new ButtonEditorTabComponent(UDZNote.tabbedPane, new JLabel("Search"), null));
+            }
+        });
+        button2.setText("Search");
         buttonsPanel.add(button2);
         JButton button3 = new JButton("BookMark");
         buttonsPanel.add(button3);

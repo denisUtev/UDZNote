@@ -1,7 +1,5 @@
 package org.example;
 
-import org.example.TabPaneActions.SaveTabAction;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -21,7 +19,7 @@ public class DnDTabbedPane extends JTabbedPane {
     private final Color lineColor = new Color(0, 100, 255);
     private int dragTabIndex = -1;
 
-    private ButtonTabComponent choosingTab;
+    private ButtonEditorTabComponent choosingTab;
 
     private void clickArrowButton(String actionKey) {
         ActionMap map = getActionMap();
@@ -34,7 +32,7 @@ public class DnDTabbedPane extends JTabbedPane {
         }
     }
 
-    public void setChoosingTab(ButtonTabComponent tab) {
+    public void setChoosingTab(ButtonEditorTabComponent tab) {
         choosingTab = tab;
     }
 
@@ -100,7 +98,7 @@ public class DnDTabbedPane extends JTabbedPane {
             public void mouseClicked(MouseEvent e) {
                 int tabIndex = indexAtLocation(e.getX(), e.getY());
                 if (tabIndex != -1) {
-                    setChoosingTab((ButtonTabComponent) getTabComponentAt(tabIndex));
+                    setChoosingTab((ButtonEditorTabComponent) getTabComponentAt(tabIndex));
                 }
             }
 
@@ -108,7 +106,7 @@ public class DnDTabbedPane extends JTabbedPane {
             public void mousePressed(MouseEvent e) {
                 int tabIndex = indexAtLocation(e.getX(), e.getY());
                 if (tabIndex != -1) {
-                    setChoosingTab((ButtonTabComponent) getTabComponentAt(tabIndex));
+                    setChoosingTab((ButtonEditorTabComponent) getTabComponentAt(tabIndex));
                 }
             }
 
@@ -116,7 +114,7 @@ public class DnDTabbedPane extends JTabbedPane {
             public void mouseReleased(MouseEvent e) {
                 int tabIndex = indexAtLocation(e.getX(), e.getY());
                 if (tabIndex != -1) {
-                    setChoosingTab((ButtonTabComponent) getTabComponentAt(tabIndex));
+                    setChoosingTab((ButtonEditorTabComponent) getTabComponentAt(tabIndex));
                 }
             }
 

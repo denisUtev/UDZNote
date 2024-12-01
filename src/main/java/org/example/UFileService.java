@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
@@ -178,5 +179,17 @@ public class UFileService {
             extension = filePath.substring(i + 1);
         }
         return extension;
+    }
+
+    public static ArrayList<File> getFiles(String directoryPath) {
+        ArrayList<File> directories = new ArrayList<>();
+        File folder = new File(directoryPath);
+        if (folder.isDirectory()) {
+            // Получаем массив файлов и папок внутри директории
+            File[] filesAndFolders = folder.listFiles();
+            assert filesAndFolders != null;
+            directories.addAll(Arrays.asList(filesAndFolders));
+        }
+        return directories;
     }
 }
