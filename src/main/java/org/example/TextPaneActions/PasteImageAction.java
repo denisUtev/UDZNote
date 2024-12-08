@@ -1,5 +1,6 @@
 package org.example.TextPaneActions;
 
+import org.example.ImageLabel;
 import org.example.UFileService;
 import org.example.UTextPane;
 
@@ -20,7 +21,7 @@ public class PasteImageAction {
 
     private JTextField widthField;
     private JTextField heightField;
-    private JLabel imageLabel;
+    private ImageLabel imageLabel;
     private File selectedFile;
 
     public PasteImageAction(UTextPane textPane, ImageIcon imageIcon) {
@@ -55,10 +56,13 @@ public class PasteImageAction {
         ParamsPanel.add(sizePanel, BorderLayout.SOUTH);
 
         // Панель с изображением
-        imageLabel = new JLabel();
-        imageLabel.setIcon(imageIcon);
+        imageLabel = new ImageLabel(imageIcon);
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        JScrollPane imageScrollPane = new JScrollPane(imageLabel);
+
+        // Оборачиваем в панель с FlowLayout
+        JPanel wrapperPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        wrapperPanel.add(imageLabel);
+        JScrollPane imageScrollPane = new JScrollPane(wrapperPanel);
 
         // Кнопка Ок
         JButton okButton = new JButton("Загрузить");

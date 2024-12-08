@@ -72,6 +72,11 @@ public class UTextPane extends JTextPane {
             throw new RuntimeException(e);
         }
 
+        setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(35, 35, 35, 35), // Отступы слева и справа
+                BorderFactory.createLineBorder(Color.GRAY, 1) // Граница карточки
+        ));
+
         setSettings();
     }
 
@@ -197,6 +202,27 @@ public class UTextPane extends JTextPane {
 
         setComponentPopupMenu(createPopupMenu());
         initImagePopup();
+        setTextPadding();
+
+        setUI(new javax.swing.plaf.basic.BasicTextPaneUI() {
+            @Override
+            protected void paintSafely(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                super.paintSafely(g2d);
+            }
+        });
+    }
+
+    private void setTextPadding() {
+        StyledDocument doc = getStyledDocument();
+        SimpleAttributeSet attributes = new SimpleAttributeSet();
+        StyleConstants.setLeftIndent(attributes, 20); // Отступ слева
+        StyleConstants.setRightIndent(attributes, 20); // Отступ справа
+        StyleConstants.setFirstLineIndent(attributes, 30); // Отступ для первой строки
+        doc.setParagraphAttributes(0, doc.getLength(), attributes, false);
     }
 
 
@@ -477,6 +503,9 @@ public class UTextPane extends JTextPane {
             // Вставляем кнопку в документ
             try {
                 getDocument().remove(matcher.start() - accumulator, matcher.end() - matcher.start());
+                if (lastCaretPosition >= matcher.start()) {
+                    lastCaretPosition -= matcher.end() - matcher.start() - 1;
+                }
                 setCaretPosition(matcher.start() - accumulator);
                 insertComponent(linkButton);
                 accumulator += matcher.end() - matcher.start();
@@ -495,7 +524,7 @@ public class UTextPane extends JTextPane {
         } catch (BadLocationException e) {
             throw new RuntimeException(e);
         }
-        Pattern pattern = Pattern.compile("#[\\p{L}_]+");
+        Pattern pattern = Pattern.compile("#[\\p{L}_\\d]+");
         Matcher matcher = pattern.matcher(text);
         int accumulator = 0;
 
@@ -507,6 +536,9 @@ public class UTextPane extends JTextPane {
             // Вставляем кнопку в документ
             try {
                 getDocument().remove(matcher.start() - accumulator, matcher.end() - matcher.start());
+                if (lastCaretPosition >= matcher.start()) {
+                    lastCaretPosition -= matcher.end() - matcher.start() - 1;
+                }
                 setCaretPosition(matcher.start() - accumulator);
                 insertComponent(linkButton);
                 accumulator += matcher.end() - matcher.start();
@@ -621,6 +653,9 @@ public class UTextPane extends JTextPane {
         while (matcher.find()) {
             try {
                 getDocument().remove(matcher.start() - accumulator, matcher.end() - matcher.start());
+                if (lastCaretPosition >= matcher.start()) {
+                    lastCaretPosition -= matcher.end() - matcher.start() - 1;
+                }
                 ImageIcon image;
                 Pattern pattern1 = Pattern.compile("(\\d+)x(\\d+)");
                 Matcher matcher1 = pattern1.matcher(matcher.group(1));
@@ -642,10 +677,27 @@ public class UTextPane extends JTextPane {
         }
     }
 
+    int lastCaretPosition = 0;
     public void updateDocumentView() {
+        Container parentScrollPane = SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
+        JScrollPane scrollPane = (JScrollPane) parentScrollPane;
+        lastCaretPosition = getCaretPosition();
+        int verticalScroll = 0;
+        int horizontalScroll = 0;
+        if (scrollPane != null) {
+            verticalScroll = scrollPane.getVerticalScrollBar().getValue();
+            horizontalScroll = scrollPane.getHorizontalScrollBar().getValue();
+        }
+
         findImages();
         insertTagButtons();
         insertMarkdownLinks();
+
+        if (scrollPane != null) {
+            setCaretPosition(lastCaretPosition);
+            scrollPane.getVerticalScrollBar().setValue(verticalScroll);
+            scrollPane.getHorizontalScrollBar().setValue(horizontalScroll);
+        }
     }
 
 
@@ -744,7 +796,6 @@ public class UTextPane extends JTextPane {
     }
 
 
-
     private JPopupMenu createPopupMenu() {
         popupMenu = new JPopupMenu("Menu");
 
@@ -799,6 +850,16 @@ public class UTextPane extends JTextPane {
         alginmentMenu.add(algign4);
 
         popupMenu.add(alginmentMenu);
+
+        JMenuItem addLine = new JMenuItem("Add line  ");
+        addLine.setAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                //addLine(getCaretPosition());
+            }
+        });
+        addLine.setText("Add line  ");
+        popupMenu.add(addLine);
 
         JMenuItem addImage = new JMenuItem("Add image ");
         addImage.setAction(new AddImageAction(this));
@@ -955,6 +1016,19 @@ public class UTextPane extends JTextPane {
         });
         bold.setText(name);
         return bold;
+    }
+
+    private void addLine(int index) {
+        try {
+            String rtfLine = "{\\pard\\qr{\\brdrb\\brdrs\\brdrw10\\brsp20 \\cell}\\par}";
+            ByteArrayInputStream rtfStream = new ByteArrayInputStream(rtfLine.getBytes());
+            getEditorKit().read(rtfStream, getDocument(), index);
+            titleTab.setForeground(new Color(35, 135, 204));
+        } catch (BadLocationException e) {
+            e.printStackTrace(); // Обработка исключения
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void setTitleTab(JLabel titleTab) {

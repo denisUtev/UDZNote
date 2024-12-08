@@ -26,7 +26,7 @@ public class LeftPanel extends JPanel {
         button2.setAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                UDZNote.addTab("Search", new JScrollPane(), new ButtonEditorTabComponent(UDZNote.tabbedPane, new JLabel("Search"), null));
+                UDZNote.createSearchTab();
             }
         });
         button2.setText("Search");

@@ -57,17 +57,6 @@ public class ButtonTabComponent extends JPanel {
         }
     }
 
-    private final MouseListener tabMouseListener = new MouseAdapter() {
-        public void mouseEntered(MouseEvent e) {
-            System.out.println(textPane.fileName);
-            pane.setChoosingTab(thisTabComponent);
-        }
-
-        public void mouseExited(MouseEvent e) {
-
-        }
-    };
-
     private class TabButton extends JButton implements ActionListener {
         public TabButton() {
             int size = 17;

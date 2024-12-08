@@ -23,6 +23,7 @@ public class UDZNote {
     private JSplitPane splitPane;
     private LeftPanel leftPanel;
     public static DnDTabbedPane tabbedPane;
+    public static Color DEFAULT_TEXT_COLOR;
 
     public static String WORKING_DIR;
     public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2";
@@ -41,7 +42,7 @@ public class UDZNote {
         initTabbedPane();
         initSplitPane();
 
-        createPreviewTab();
+        createSearchTab();
     }
 
     private void checkImageDirectory() {
@@ -58,6 +59,9 @@ public class UDZNote {
         mainFrame.setDefaultCloseOperation(mainFrame.EXIT_ON_CLOSE);
         mainFrame.setTitle("UDZNote");
         mainFrame.setVisible(true);
+
+        JLabel label = new JLabel();
+        DEFAULT_TEXT_COLOR = label.getForeground();
 
         //Display the window.
         //frame.pack();
@@ -118,22 +122,22 @@ public class UDZNote {
         tabbedPane.setFont(Params.BIG_TAB_TITLE_FONT);
     }
 
-    private void createPreviewTab() {
-        CardPanel cardPanel = new CardPanel(30, 200, 250, 12);
+    public static void createSearchTab() {
+        CardPanel cardPanel = new CardPanel();
         cardPanel.setDataForCards(org.example.UFileService.getFiles(ROOT_PATH));
 
-        JScrollPane scrollPane = new JScrollPane(cardPanel);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        scrollPane.setBackground(new Color(0, 0, 0, 0));
-        scrollPane.setBorder(null);
+//        JScrollPane scrollPane = new JScrollPane(cardPanel);
+//        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+//        scrollPane.setBackground(new Color(0, 0, 0, 0));
+//        scrollPane.setBorder(null);
 
-        String nameTab = "Preview";
+        String nameTab = "Search";
         JLabel titleTab = new JLabel(nameTab);
         titleTab.setFont(Params.TAB_TITLE_FONT);
         titleTab.setForeground(Color.WHITE);
 
         ButtonEditorTabComponent tabComponent = new ButtonEditorTabComponent(tabbedPane, titleTab, null);
-        addTab(nameTab, scrollPane, tabComponent);
+        addTab(nameTab, cardPanel, tabComponent);
     }
 
     private ArrayList<File> getNotesWithTags(ArrayList<String> tags, File directory) {

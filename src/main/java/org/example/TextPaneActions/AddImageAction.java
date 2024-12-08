@@ -1,5 +1,6 @@
 package org.example.TextPaneActions;
 
+import org.example.ImageLabel;
 import org.example.UFileService;
 import org.example.UTextPane;
 
@@ -21,7 +22,7 @@ public class AddImageAction extends AbstractAction {
     private JTextField pathField;
     private JTextField widthField;
     private JTextField heightField;
-    private JLabel imageLabel;
+    private ImageLabel imageLabel;
     private File selectedFile;
 
     public AddImageAction(UTextPane textPane) {
@@ -68,9 +69,12 @@ public class AddImageAction extends AbstractAction {
         ParamsPanel.add(sizePanel, BorderLayout.SOUTH);
 
         // Панель с изображением
-        imageLabel = new JLabel("Изображение не выбрано");
+        imageLabel = new ImageLabel("Изображение не выбрано");
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        JScrollPane imageScrollPane = new JScrollPane(imageLabel);
+        // Оборачиваем в панель с FlowLayout
+        JPanel wrapperPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        wrapperPanel.add(imageLabel);
+        JScrollPane imageScrollPane = new JScrollPane(wrapperPanel);
 
         // Кнопка Ок
         JButton okButton = new JButton("Загрузить");
