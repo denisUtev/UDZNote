@@ -13,25 +13,25 @@ public class LeftPanel extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         buttonsPanel = new JPanel();
-        JButton button = new JButton("Settings");
+        JButton button = new JButton("Настройки");
         button.setAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 new SettingsFrame();
             }
         });
-        button.setText("Settings");
+        button.setText("Настройки");
         buttonsPanel.add(button);
-        JButton button2 = new JButton("Search");
+        JButton button2 = new JButton("Поиск");
         button2.setAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 UDZNote.createSearchTab();
             }
         });
-        button2.setText("Search");
+        button2.setText("Поиск");
         buttonsPanel.add(button2);
-        JButton button3 = new JButton("BookMark");
+        JButton button3 = new JButton("Избранное");
         buttonsPanel.add(button3);
         add(BorderLayout.NORTH, buttonsPanel);
 

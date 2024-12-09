@@ -8,7 +8,7 @@ import java.awt.event.ActionEvent;
 
 public class SaveTabAction extends AbstractAction {
 
-    private UTextPane textPane;
+    private final UTextPane textPane;
 
     public SaveTabAction(UTextPane textPane) {
         putValue(NAME, "Save     ");

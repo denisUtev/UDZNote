@@ -1,5 +1,8 @@
 package org.example;
 
+import org.example.TabPaneActions.AddDescriptionAction;
+import org.example.TabPaneActions.AddInBookMarkAction;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -34,6 +37,10 @@ public class DnDTabbedPane extends JTabbedPane {
 
     public void setChoosingTab(ButtonEditorTabComponent tab) {
         choosingTab = tab;
+    }
+
+    public ButtonEditorTabComponent getChoosingTab() {
+        return choosingTab;
     }
 
     //private static Rectangle rBackward = new Rectangle();
@@ -75,7 +82,7 @@ public class DnDTabbedPane extends JTabbedPane {
                 }
             }
         });
-        saveTabAction.setText("Save     ");
+        saveTabAction.setText("Сохранить");
         JMenuItem copyPath = new JMenuItem(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -84,7 +91,14 @@ public class DnDTabbedPane extends JTabbedPane {
                 }
             }
         });
-        copyPath.setText("Copy path");
+        copyPath.setText("Скопировать путь");
+        JMenuItem addDescription = new JMenuItem();
+        addDescription.setAction(new AddDescriptionAction(this));
+        pm.add(addDescription);
+        JMenuItem addInBookMark = new JMenuItem();
+        addInBookMark.setAction(new AddInBookMarkAction(this));
+        pm.add(addDescription);
+        pm.add(addInBookMark);
         pm.add(saveTabAction);
         pm.add(copyPath);
         return pm;

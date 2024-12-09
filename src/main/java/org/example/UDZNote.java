@@ -1,5 +1,7 @@
 package org.example;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.CardPanel.CardPanel;
 import org.example.FileTreeActions.UFileService;
 import org.example.PDFPanel.PDFViewerPanel;
@@ -13,7 +15,7 @@ import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
 
 import static org.example.Params.initFonts;
 
@@ -24,8 +26,12 @@ public class UDZNote {
     private LeftPanel leftPanel;
     public static DnDTabbedPane tabbedPane;
     public static Color DEFAULT_TEXT_COLOR;
+    public static HashMap<String, String> dictDescriptions;
+    public static HashMap<String, String> dictBookMarks;
 
     public static String WORKING_DIR;
+    public static String DESCRIPTIONS_FILE = "descriptions.txt";
+    public static String BOOKMARKS_FILE = "bookmarks.txt";
     public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2";
     public static String IMAGE_DIRECTORY = "-";
     //public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\База знаний";
@@ -35,6 +41,8 @@ public class UDZNote {
         initFonts(WORKING_DIR);
         checkImageDirectory();
         //ROOT_PATH = WORKING_DIR + File.separator + "data" + File.separator;
+        dictDescriptions = getFilesDescription();
+        dictBookMarks = getFilesBookMark();
 
         initMainFrame();
 
@@ -90,6 +98,46 @@ public class UDZNote {
         }
     }
 
+    public static void setDescriptionToFile(File file, String description) {
+        dictDescriptions.put(file.getPath(), description);
+        writeDictionaryToJsonFile(dictDescriptions, WORKING_DIR + File.separator + DESCRIPTIONS_FILE);
+    }
+
+    public static void setBookMarkToFile(File file, String bookMark) {
+        dictBookMarks.put(file.getPath(), bookMark);
+        writeDictionaryToJsonFile(dictBookMarks, WORKING_DIR + File.separator + BOOKMARKS_FILE);
+    }
+
+    public HashMap<String, String> getFilesDescription() {
+        return readJsonFile(WORKING_DIR + File.separator + DESCRIPTIONS_FILE);
+    }
+
+    public HashMap<String, String> getFilesBookMark() {
+        return readJsonFile(WORKING_DIR + File.separator + BOOKMARKS_FILE);
+    }
+
+    public static HashMap<String, String> readJsonFile(String filePath) {
+        ObjectMapper mapper = new ObjectMapper();
+        File file = new File(filePath);
+        try {
+            return mapper.readValue(file, new TypeReference<>(){});
+        } catch (IOException e) {
+            //throw new RuntimeException(e);
+            writeDictionaryToJsonFile(new HashMap<>(), filePath);
+            return new HashMap<>();
+        }
+    }
+
+    public static void writeDictionaryToJsonFile(HashMap<String, String> dictionary, String filePath) {
+        ObjectMapper mapper = new ObjectMapper(); // Создаем объект маппера
+        File file = new File(filePath);           // Указываем путь к файлу
+        try {
+            mapper.writeValue(file, dictionary);      // Сохраняем словарь в файл
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private ArrayList<UTextPane> findAllTextFields(Component component) {
         ArrayList<UTextPane> fields = new ArrayList<>();
         if (component instanceof Container) {
@@ -126,12 +174,7 @@ public class UDZNote {
         CardPanel cardPanel = new CardPanel();
         cardPanel.setDataForCards(org.example.UFileService.getFiles(ROOT_PATH));
 
-//        JScrollPane scrollPane = new JScrollPane(cardPanel);
-//        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-//        scrollPane.setBackground(new Color(0, 0, 0, 0));
-//        scrollPane.setBorder(null);
-
-        String nameTab = "Search";
+        String nameTab = "Поиск";
         JLabel titleTab = new JLabel(nameTab);
         titleTab.setFont(Params.TAB_TITLE_FONT);
         titleTab.setForeground(Color.WHITE);

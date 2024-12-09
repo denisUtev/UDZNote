@@ -146,4 +146,8 @@ public class ButtonEditorTabComponent extends JPanel {
     public void setPDFViewerPanel(PDFViewerPanel pdfViewerPanel) {
         this.pdfViewerPanel =  pdfViewerPanel;
     }
+
+    public UTextPane getTextPane() {
+        return textPane;
+    }
 }

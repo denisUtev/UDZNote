@@ -4,6 +4,7 @@ import org.example.UDZNote;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -16,13 +17,15 @@ public class Card {
 
     private final String title;
     private final String description;
+    private final String bookMark;
     private final String lastModifiedDate;
     private final ArrayList<String> tags;
     private final File file;
     private JPanel card;
 
-    public Card(String title, String description, ArrayList<String> tags, String lastModifiedDate, File file) {
+    public Card(String title, String bookMark, String description, ArrayList<String> tags, String lastModifiedDate, File file) {
         this.title = title;
+        this.bookMark = bookMark;
         this.description = description;
         this.tags = tags;
         this.lastModifiedDate = lastModifiedDate;
@@ -92,7 +95,23 @@ public class Card {
         }
 
         // Добавление элементов в contentPanel
-        contentPanel.add(titleLabel);
+        JPanel titlePanel = new JPanel();
+        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
+        titlePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        titlePanel.add(titleLabel);
+        if (!bookMark.isEmpty()) {
+            JButton bookMarkButton = new JButton(bookMark);
+            bookMarkButton.setFont(new Font("Arial", Font.ITALIC, 16));
+            bookMarkButton.setForeground(new Color(86, 118, 253));
+            //bookMarkButton.setBorder(new LineBorder(new Color(86, 118, 253)));
+            RoundedBorder border = new RoundedBorder(6);
+            border.setColor(new Color(86, 118, 253));
+            bookMarkButton.setBorder(border);
+            titlePanel.add(Box.createRigidArea(new Dimension(12, 0)));
+            titlePanel.add(bookMarkButton);
+        }
+        //contentPanel.add(titleLabel);
+        contentPanel.add(titlePanel);
         contentPanel.add(Box.createRigidArea(new Dimension(0, 6))); // Отступ между элементами
         contentPanel.add(descriptionLabel);
         contentPanel.add(Box.createRigidArea(new Dimension(0, 6)));

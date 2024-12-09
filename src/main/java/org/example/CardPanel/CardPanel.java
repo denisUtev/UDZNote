@@ -50,7 +50,15 @@ public class CardPanel extends JPanel {
             if (file.isDirectory()) {
                 setDataForCards(UFileService.getFiles(file.getPath()));
             } else {
-                Card card = createCard(file.getName(), "Заметка", getTagsFromFile(file), lastModifiedTime, file);
+                String description = "Без описания";
+                if (UDZNote.dictDescriptions.containsKey(file.getPath())) {
+                    description = UDZNote.dictDescriptions.get(file.getPath());
+                }
+                String bookMark = "";
+                if (UDZNote.dictBookMarks.containsKey(file.getPath())) {
+                    bookMark = UDZNote.dictBookMarks.get(file.getPath());
+                }
+                Card card = createCard(file.getName(), bookMark, description, getTagsFromFile(file), lastModifiedTime, file);
                 cards.add(card);
                 cardsPanel.add(card.getCard());
                 cardsPanel.add(Box.createVerticalStrut(10));
@@ -136,7 +144,7 @@ public class CardPanel extends JPanel {
     }
 
 
-    public static Card createCard(String title, String description, ArrayList<String> tags, String lastModifiedDate, File file) {
-        return new Card(title, description, tags, lastModifiedDate, file);
+    public static Card createCard(String title, String bookMark, String description, ArrayList<String> tags, String lastModifiedDate, File file) {
+        return new Card(title, bookMark, description, tags, lastModifiedDate, file);
     }
 }
