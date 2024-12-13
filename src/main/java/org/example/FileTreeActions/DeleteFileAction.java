@@ -27,7 +27,7 @@ public class DeleteFileAction extends AbstractAction {
         int res = JOptionPane.showConfirmDialog(UDZNote.getMainFrame(), "<html><h2>Delete " + type + " " + filePath.getName() + "?</h2>\n<h4>" + fileTree.getChoosedPath(), "Confirmation", JOptionPane.YES_NO_OPTION);
         if (res == JOptionPane.YES_OPTION) {
             deleteFiles(fileTree.getChoosedPath());
-            fileTree.updateFileTree();
         }
+        fileTree.updateFileTree();
     }
 }

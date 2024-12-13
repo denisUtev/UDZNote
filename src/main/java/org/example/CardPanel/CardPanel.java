@@ -2,16 +2,12 @@ package org.example.CardPanel;
 
 import org.example.UDZNote;
 import org.example.UFileService;
-import org.example.UTextPane;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.rtf.RTFEditorKit;
 import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,21 +22,29 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.example.UDZNote.DEFAULT_TEXT_COLOR;
-
 public class CardPanel extends JPanel {
 
     private ArrayList<Card> cards = new ArrayList<>();
     private final JPanel cardsPanel;
     private final JScrollPane cardsScrollPane;
 
-    public CardPanel() {
+    public CardPanel(SearchPanel searchPanel) {
         setLayout(new BorderLayout());
         cardsPanel = new JPanel();
         cardsPanel.setLayout(new BoxLayout(cardsPanel, BoxLayout.Y_AXIS));
         cardsScrollPane = new JScrollPane(cardsPanel);
-        SearchPanel searchPanel = new SearchPanel();
+        //SearchPanel searchPanel = new SearchPanel();
         add(searchPanel.createSearchPanel(this), BorderLayout.NORTH);
+        add(cardsScrollPane, BorderLayout.CENTER);
+    }
+
+    public CardPanel(BookMarkPanel bookMarkPanel) {
+        setLayout(new BorderLayout());
+        cardsPanel = new JPanel();
+        cardsPanel.setLayout(new BoxLayout(cardsPanel, BoxLayout.Y_AXIS));
+        cardsScrollPane = new JScrollPane(cardsPanel);
+        //SearchPanel searchPanel = new SearchPanel();
+        add(bookMarkPanel.createBookMarkSearchPanel(this), BorderLayout.NORTH);
         add(cardsScrollPane, BorderLayout.CENTER);
     }
 
@@ -85,6 +89,20 @@ public class CardPanel extends JPanel {
                     }
                 }
                 if (flag) {
+                    cardsPanel.add(card.getCard());
+                    cardsPanel.add(Box.createVerticalStrut(10));
+                }
+            }
+        }
+        cardsScrollPane.repaint();
+        cardsScrollPane.updateUI();
+    }
+
+    public void findCards(String name, String bookMark) {
+        cardsPanel.removeAll();
+        for (var card : cards) {
+            if (name.isEmpty() || card.getTitle().toLowerCase().contains(name.toLowerCase())) {
+                if (bookMark.isEmpty() || card.getBookMark().equalsIgnoreCase(bookMark)) {
                     cardsPanel.add(card.getCard());
                     cardsPanel.add(Box.createVerticalStrut(10));
                 }

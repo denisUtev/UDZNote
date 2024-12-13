@@ -83,13 +83,20 @@ public class FileTree extends JScrollPane {
     public void updateFileTree() {
         try {
             var lastTime = Files.getLastModifiedTime(rootPath);
-            if (lastModifiedTime == null || lastModifiedTime.compareTo(lastTime) != 0) {
-                DefaultTreeModel model = (DefaultTreeModel) fileTree.getModel();
-                DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
-                MutableTreeNode newTreeFile = scan(rootFile);
-                updateFileTree(root, newTreeFile);
-                lastModifiedTime = lastTime;
-            }
+//            if (lastModifiedTime == null || lastModifiedTime.compareTo(lastTime) != 0) {
+//                System.out.println("test1");
+//                DefaultTreeModel model = (DefaultTreeModel) fileTree.getModel();
+//                DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+//                MutableTreeNode newTreeFile = scan(rootFile);
+//                updateFileTree(root, newTreeFile);
+//                lastModifiedTime = lastTime;
+//                System.out.println("test2");
+//            }
+            DefaultTreeModel model = (DefaultTreeModel) fileTree.getModel();
+            DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+            MutableTreeNode newTreeFile = scan(rootFile);
+            updateFileTree(root, newTreeFile);
+            lastModifiedTime = lastTime;
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Не удалось обновить содержимое дерева: " + rootPath);
             throw new RuntimeException(e);
@@ -98,9 +105,10 @@ public class FileTree extends JScrollPane {
 
     private static MutableTreeNode scan(File node) {
         DefaultMutableTreeNode ret = new DefaultMutableTreeNode(node.getName());
-        if (node.isDirectory())
-            for (File child: Objects.requireNonNull(node.listFiles()))
+        if (node.isDirectory()) {
+            for (File child : Objects.requireNonNull(node.listFiles()))
                 ret.add(scan(child));
+        }
         return ret;
     }
 
@@ -172,4 +180,8 @@ public class FileTree extends JScrollPane {
     public String getChoosedPath() {
         return choosedPath;
     }
+
+//    public void updateFileTree() {
+//
+//    }
 }

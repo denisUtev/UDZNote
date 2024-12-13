@@ -137,6 +137,10 @@ public class Card {
         return title;
     }
 
+    public String getBookMark() {
+        return bookMark;
+    }
+
     public boolean hasTag(String tag) {
         return tags.contains(tag);
     }

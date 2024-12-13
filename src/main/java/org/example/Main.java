@@ -12,6 +12,7 @@ public class Main {
     /*
         1. checkUpdatesFile() - надо будет доработать...
         2. В md вкладках нужно реализовать стили на css
+        Error: (UTextPane.java:697)
      */
 
     public static void main(String[] args) {

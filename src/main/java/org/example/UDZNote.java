@@ -2,19 +2,25 @@ package org.example;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.CardPanel.BookMarkPanel;
 import org.example.CardPanel.CardPanel;
+import org.example.CardPanel.SearchPanel;
 import org.example.FileTreeActions.UFileService;
 import org.example.PDFPanel.PDFViewerPanel;
 import org.example.TextPaneActions.PasteImageAction;
 
 import javax.swing.*;
+import javax.swing.text.*;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.rtf.RTFEditorKit;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDropEvent;
-import java.io.File;
-import java.io.IOException;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.*;
 import java.util.*;
 
 import static org.example.Params.initFonts;
@@ -23,15 +29,17 @@ public class UDZNote {
 
     private static JFrame mainFrame;
     private JSplitPane splitPane;
-    private LeftPanel leftPanel;
+    private static LeftPanel leftPanel;
     public static DnDTabbedPane tabbedPane;
     public static Color DEFAULT_TEXT_COLOR;
     public static HashMap<String, String> dictDescriptions;
     public static HashMap<String, String> dictBookMarks;
+    public static HashMap<String, String> dictBookNames;
 
     public static String WORKING_DIR;
     public static String DESCRIPTIONS_FILE = "descriptions.txt";
     public static String BOOKMARKS_FILE = "bookmarks.txt";
+    public static String BOOK_NAMES_FILE = "booknames.txt";
     public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2";
     public static String IMAGE_DIRECTORY = "-";
     //public static String ROOT_PATH = "C:\\Users\\utev2\\Documents\\База знаний";
@@ -43,6 +51,7 @@ public class UDZNote {
         //ROOT_PATH = WORKING_DIR + File.separator + "data" + File.separator;
         dictDescriptions = getFilesDescription();
         dictBookMarks = getFilesBookMark();
+        dictBookNames = getFilesBookNames();
 
         initMainFrame();
 
@@ -73,7 +82,12 @@ public class UDZNote {
 
         //Display the window.
         //frame.pack();
-        mainFrame.setVisible(true);
+        mainFrame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+
+            }
+        });
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             onExit();
             throwable.printStackTrace();
@@ -108,12 +122,21 @@ public class UDZNote {
         writeDictionaryToJsonFile(dictBookMarks, WORKING_DIR + File.separator + BOOKMARKS_FILE);
     }
 
+    public static void setBookNameToFile(File file, String bookName) {
+        dictBookNames.put(file.getPath(), bookName);
+        writeDictionaryToJsonFile(dictBookNames, WORKING_DIR + File.separator + BOOK_NAMES_FILE);
+    }
+
     public HashMap<String, String> getFilesDescription() {
         return readJsonFile(WORKING_DIR + File.separator + DESCRIPTIONS_FILE);
     }
 
     public HashMap<String, String> getFilesBookMark() {
         return readJsonFile(WORKING_DIR + File.separator + BOOKMARKS_FILE);
+    }
+
+    public HashMap<String, String> getFilesBookNames() {
+        return readJsonFile(WORKING_DIR + File.separator + BOOK_NAMES_FILE);
     }
 
     public static HashMap<String, String> readJsonFile(String filePath) {
@@ -136,6 +159,41 @@ public class UDZNote {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void createNoteForBook(File bookPath, String copiedText) {
+        if (!dictBookNames.containsKey(bookPath.getPath())) {
+            String nameBook = JOptionPane.showInputDialog("Введите название книги");
+            if (nameBook != null) {
+                dictBookNames.put(bookPath.getPath(), nameBook);
+                UFileService.createPackage(ROOT_PATH, nameBook);
+                writeDictionaryToJsonFile(dictBookNames, WORKING_DIR + File.separator + BOOK_NAMES_FILE);
+            } else {
+                return;
+            }
+        }
+        String nameNote = JOptionPane.showInputDialog("Введите название заметки");
+        if (nameNote != null) {
+            if (!nameNote.contains(".")) {
+                nameNote += ".rtf";
+            }
+            String filePath = ROOT_PATH + File.separator + dictBookNames.get(bookPath.getPath()) + File.separator + nameNote;
+            StyledDocument doc = new DefaultStyledDocument();
+            try {
+                StyleContext context = new StyleContext();
+                Style style = context.addStyle("textStyle", null);
+                StyleConstants.setForeground(style, Color.GRAY);
+                doc.insertString(doc.getLength(), copiedText, style);
+                RTFEditorKit rtfKit = new RTFEditorKit();
+                FileOutputStream fos = new FileOutputStream(filePath);
+                rtfKit.write(fos, doc, 0, doc.getLength());
+                fos.close();
+            } catch (BadLocationException | IOException e) {
+                throw new RuntimeException(e);
+            }
+            openFile(filePath);
+        }
+        leftPanel.updateFileTree();
     }
 
     private ArrayList<UTextPane> findAllTextFields(Component component) {
@@ -171,10 +229,23 @@ public class UDZNote {
     }
 
     public static void createSearchTab() {
-        CardPanel cardPanel = new CardPanel();
+        CardPanel cardPanel = new CardPanel(new SearchPanel());
         cardPanel.setDataForCards(org.example.UFileService.getFiles(ROOT_PATH));
 
         String nameTab = "Поиск";
+        JLabel titleTab = new JLabel(nameTab);
+        titleTab.setFont(Params.TAB_TITLE_FONT);
+        titleTab.setForeground(Color.WHITE);
+
+        ButtonEditorTabComponent tabComponent = new ButtonEditorTabComponent(tabbedPane, titleTab, null);
+        addTab(nameTab, cardPanel, tabComponent);
+    }
+
+    public static void createBookMarkTab() {
+        CardPanel cardPanel = new CardPanel(new BookMarkPanel());
+        cardPanel.setDataForCards(org.example.UFileService.getFiles(ROOT_PATH));
+
+        String nameTab = "Избранное";
         JLabel titleTab = new JLabel(nameTab);
         titleTab.setFont(Params.TAB_TITLE_FONT);
         titleTab.setForeground(Color.WHITE);

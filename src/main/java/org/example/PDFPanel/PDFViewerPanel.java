@@ -7,6 +7,7 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.text.PDFTextStripperByArea;
 import org.apache.pdfbox.text.TextPosition;
+import org.example.UDZNote;
 
 import javax.swing.*;
 import javax.swing.text.SimpleAttributeSet;
@@ -30,6 +31,7 @@ public class PDFViewerPanel extends JPanel {
     private PDDocument document = new PDDocument();
     private final PDFRenderer renderer;
     private PDRectangle documentBox;
+    private File pdfFile;
 
     private int currentPage = 0;
     private double zoomFactor = 1.0;
@@ -67,6 +69,7 @@ public class PDFViewerPanel extends JPanel {
 
     public final static String COPY_ACTION = "Copy";
     public PDFViewerPanel(File pdfFile) throws IOException {
+        this.pdfFile = pdfFile;
         ActionListener actionListener = e -> {
             if (isNumber(pageTextField.getText())) {
                 currentPage = Integer.parseInt(pageTextField.getText().substring(0, indexSlash(pageTextField.getText())));
@@ -148,9 +151,11 @@ public class PDFViewerPanel extends JPanel {
     private JPopupMenu createPopupMenu() {
         JPopupMenu popupMenu = new JPopupMenu("Menu");
 
-        JMenuItem header1 = getCopyTextMenuItem();
-        popupMenu.add(header1);
+        JMenuItem copyTextMenuItem = getCopyTextMenuItem();
+        popupMenu.add(copyTextMenuItem);
 
+        JMenuItem createNoteMenuItem = getCreateNoteMenuItem();
+        popupMenu.add(createNoteMenuItem);
 
         return popupMenu;
     }
@@ -170,6 +175,21 @@ public class PDFViewerPanel extends JPanel {
             }
         });
         header.setText("Copy     ");
+        return header;
+    }
+
+    private JMenuItem getCreateNoteMenuItem() {
+        JMenuItem header = new JMenuItem(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                StringBuilder text = new StringBuilder();
+                for (var character : selectedCharacters) {
+                    text.append(character.getUnicode());
+                }
+                UDZNote.createNoteForBook(pdfFile, text.toString());
+            }
+        });
+        header.setText("Создать заметку");
         return header;
     }
 

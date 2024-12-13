@@ -23,9 +23,10 @@ public class ImageLabel extends JLabel {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Рисуем изображение
-        Image img = ((ImageIcon) getIcon()).getImage();
-        g2d.drawImage(img, 0, 0, getWidth(), getHeight(), this);
-
+        if (getIcon() != null) {
+            Image img = ((ImageIcon) getIcon()).getImage();
+            g2d.drawImage(img, 0, 0, getWidth(), getHeight(), this);
+        }
         g2d.dispose();
     }
 

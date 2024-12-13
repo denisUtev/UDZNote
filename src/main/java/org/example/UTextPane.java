@@ -694,7 +694,7 @@ public class UTextPane extends JTextPane {
         insertMarkdownLinks();
 
         if (scrollPane != null) {
-            setCaretPosition(lastCaretPosition);
+            setCaretPosition(min(lastCaretPosition, getDocument().getLength()));
             scrollPane.getVerticalScrollBar().setValue(verticalScroll);
             scrollPane.getHorizontalScrollBar().setValue(horizontalScroll);
         }
@@ -744,6 +744,7 @@ public class UTextPane extends JTextPane {
         // Создаем парсер и рендерер
         String htmlText = convertMarkdownToHtml(text);
         setContentType("text/html");
+        setForeground(UDZNote.DEFAULT_TEXT_COLOR);
         setText(htmlText);
     }
 

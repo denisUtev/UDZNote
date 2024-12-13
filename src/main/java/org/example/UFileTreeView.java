@@ -20,7 +20,7 @@ public class UFileTreeView {
                     //System.out.println(node.getUserObject());
                     String name = (String)node.getUserObject();
                     float dy = 3;
-                    if(leaf) {
+                    if(leaf && name.contains(".")) {
                         if(name.contains(".java"))
                             setIcon(new FileImage("c", new Color(0xFC5185), 5, 16 + dy));
                         else if(name.contains(".pde"))

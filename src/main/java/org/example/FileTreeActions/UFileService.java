@@ -13,13 +13,14 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class UFileService {
 
-    public static void createFile(String path, String text){
+    public static void createFile(String path, String text) {
         File f = new File(path);
         try (FileWriter writer = new FileWriter(path, false)) {
             writer.write(text);
             writer.flush();
         } catch (Exception ex) {
             //printResults(ex.getMessage());
+            System.out.println(ex.getMessage());
         }
     }
 

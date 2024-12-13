@@ -32,6 +32,13 @@ public class LeftPanel extends JPanel {
         button2.setText("Поиск");
         buttonsPanel.add(button2);
         JButton button3 = new JButton("Избранное");
+        button3.setAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                UDZNote.createBookMarkTab();
+            }
+        });
+        button3.setText("Избранное");
         buttonsPanel.add(button3);
         add(BorderLayout.NORTH, buttonsPanel);
 
@@ -39,5 +46,9 @@ public class LeftPanel extends JPanel {
 
         fileTree = new FileTree(UDZNote.ROOT_PATH);
         add(BorderLayout.NORTH, fileTree);
+    }
+
+    public void updateFileTree() {
+        fileTree.updateFileTree();
     }
 }

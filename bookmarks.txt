@@ -1,1 +1,1 @@
-{"C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2\\code.rtf":"Код на Java","C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2\\efgrtjyi.rtf":"Важное"}
+{"C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2\\new file.rtf":"тест","C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2\\code.rtf":"Код на Java","C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2\\efgrtjyi.rtf":"Важное","C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2\\name.rtf":"Важное"}
