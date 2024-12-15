@@ -840,6 +840,30 @@ public class UTextPane extends JTextPane {
 
         popupMenu.add(colorsMenu);
 
+
+        JMenu backgroundsMenu = new JMenu("Backgrounds");
+        JMenuItem background1 = getBackgroundMenuItem(Color.BLACK, "black");
+        backgroundsMenu.add(background1);
+        JMenuItem background2 = getBackgroundMenuItem(Color.GRAY, "gray");
+        backgroundsMenu.add(background2);
+        JMenuItem background3 = getBackgroundMenuItem(Color.BLUE, "blue");
+        backgroundsMenu.add(background3);
+        JMenuItem background4 = getBackgroundMenuItem(Color.GREEN, "green");
+        backgroundsMenu.add(background4);
+        JMenuItem background5 = getBackgroundMenuItem(Color.RED, "red");
+        backgroundsMenu.add(background5);
+        JMenuItem background6 = getBackgroundMenuItem(Color.ORANGE, "orange");
+        backgroundsMenu.add(background6);
+        JMenuItem background7 = getBackgroundMenuItem(Color.YELLOW, "yellow");
+        backgroundsMenu.add(background7);
+        JMenuItem background8 = getBackgroundMenuItem(Color.WHITE, "white");
+        backgroundsMenu.add(background8);
+        JMenuItem background9 = getBackgroundMenuItem(getBackground(), "clear");
+        backgroundsMenu.add(background9);
+
+        popupMenu.add(backgroundsMenu);
+
+
         JMenu alginmentMenu = new JMenu("Alignment");
         JMenuItem algign1 = getAlignLeftMenuItem();
         alginmentMenu.add(algign1);
@@ -1012,6 +1036,26 @@ public class UTextPane extends JTextPane {
                 StyleConstants.setForeground(headerStyle, col);
                 StyledDocument doc = getStyledDocument();
                 doc.setCharacterAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), headerStyle, false);
+                titleTab.setForeground(new Color(35, 135, 204));
+            }
+        });
+        bold.setText(name);
+        return bold;
+    }
+
+    private JMenuItem getBackgroundMenuItem(Color col, String name) {
+        JMenuItem bold = new JMenuItem(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                SimpleAttributeSet headerStyle = new SimpleAttributeSet();
+                //StyleConstants.setForeground(headerStyle, col);
+                StyleConstants.setBackground(headerStyle, col);
+                StyledDocument doc = getStyledDocument();
+                doc.setCharacterAttributes(getSelectionStart(), getSelectionEnd() - getSelectionStart(), headerStyle, false);
+
+                SimpleAttributeSet clearStyle = new SimpleAttributeSet(); // Создаем пустой набор атрибутов
+                StyleConstants.setBackground(clearStyle, getBackground()); // Устанавливаем прозрачный фон
+                doc.setCharacterAttributes(getSelectionEnd(), doc.getLength() - getSelectionEnd(), clearStyle, false);
                 titleTab.setForeground(new Color(35, 135, 204));
             }
         });
