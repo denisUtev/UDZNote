@@ -21,19 +21,31 @@ public class UFileTreeView {
                     String name = (String)node.getUserObject();
                     float dy = 3;
                     if(leaf && name.contains(".")) {
-                        if(name.contains(".java"))
-                            setIcon(new FileImage("c", new Color(0xFC5185), 5, 16 + dy));
-                        else if(name.contains(".pde"))
-                            setIcon(new FileImage("p", new Color(0xB31FA4FF, true), 5.3f, 15 + dy));
-                        else if(name.contains(".png") || name.contains(".jpg") || name.contains(".jpeg"))
-                            setIcon(new FileImage("i", new Color(0x3FC1C9), 7.5f, 17 + dy));
-                        else if(name.contains(".txt") || name.contains(".md")){
-                            setIcon(new FileImage("t", new Color(0xAAAAAA), 7.5f, 16.5f + dy));
-                        } else if(name.contains(".py")){
-                            setIcon(new FileImage("p", new Color(0xFF22AB3C, true), 5.3f, 15 + dy));
+                        String extension = UFileService.getExtension(name);
+                        if (extension.equals("rtf")) {
+                            setIcon(new FileImage2("rtf", new Color(0x58508d), 10, 18 + dy));
+                        } else if (extension.equals("md")) {
+                            setIcon(new FileImage2("md", new Color(0x003f5c), 5, 16 + dy));
+                        } else if (extension.equals("pdf")) {
+                            setIcon(new FileImage2("pdf", new Color(0xff6361), 5, 16 + dy));
+                        } else if (extension.equals("png") || extension.equals("jpg")) {
+                            setIcon(new FileImage2(extension, new Color(0xbc5090), 5, 16 + dy));
                         } else {
-                            setIcon(new FileImage("?", new Color(0xAAAAAA), 5.5f, 17f + dy));
+                            setIcon(new FileImage2(extension, new Color(0x9975767C, true), 8, 17 + dy));
                         }
+//                        if(name.contains(".java"))
+//                            setIcon(new FileImage2("c", new Color(0xFC5185), 5, 16 + dy));
+//                        else if(name.contains(".pde"))
+//                            setIcon(new FileImage2("p", new Color(0xB31FA4FF, true), 5.3f, 15 + dy));
+//                        else if(name.contains(".png") || name.contains(".jpg") || name.contains(".jpeg"))
+//                            setIcon(new FileImage2("i", new Color(0x3FC1C9), 7.5f, 17 + dy));
+//                        else if(name.contains(".txt") || name.contains(".md")){
+//                            setIcon(new FileImage2("t", new Color(0xAAAAAA), 7.5f, 16.5f + dy));
+//                        } else if(name.contains(".py")){
+//                            setIcon(new FileImage2("p", new Color(0xFF22AB3C, true), 5.3f, 15 + dy));
+//                        } else {
+//                            setIcon(new FileImage2("?", new Color(0xAAAAAA), 5.5f, 17f + dy));
+//                        }
                     } else {
                         setIcon(new FolderImage(new Color(0x118ab2)));
                     }
@@ -59,17 +71,21 @@ public class UFileTreeView {
                 color = col;
             }
             public int getIconWidth() {
-                return 18;
+                return 22;
             }
             public int getIconHeight() {
                 return 18;
             }
-            public void paintIcon(
-                    Component c, Graphics g, int w, int h) {
+            public void paintIcon(Component c, Graphics g, int w, int h) {
                 Graphics2D g2 = (Graphics2D)g.create();
+                // Включение высокого качества рендеринга
+                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
                 g2.setColor(color);
-                g2.setFont(new Font("unicode", Font.BOLD, 18));
-                g2.drawString("\uD83D\uDDC0", 0, 19);
+                g2.setFont(new Font("unicode", Font.BOLD, 22));
+                g2.drawString("\uD83D\uDDC0", -2, 21);
             }
         }
 
@@ -102,6 +118,43 @@ public class UFileTreeView {
                 Stroke s = new BasicStroke(2);
                 g2.setStroke(s);
                 g2.drawOval(2,8, 14, 14);
+            }
+        }
+
+        public class FileImage2 implements Icon {
+
+            String symbol;
+            Color color;
+            float posX, posY;
+
+            public FileImage2(String str, Color col, float x, float y){
+                symbol = str;
+                color = col;
+                posX = x;
+                posY = y;
+            }
+            public int getIconWidth() {
+                return 28;
+            }
+            public int getIconHeight() {
+                return 18;
+            }
+            public void paintIcon(Component c, Graphics g, int w, int h) {
+                Graphics2D g2 = (Graphics2D)g.create();
+                // Включение высокого качества рендеринга
+                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setRenderingHints(hints);
+                Stroke s = new BasicStroke(2);
+                g2.setColor(color);
+                g2.setStroke(s);
+                g2.fillRoundRect(2, 8, 28, 16, 5, 5);
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("unicode", Font.PLAIN, 14));
+                g2.drawString(symbol, posX, posY);
             }
         }
     }

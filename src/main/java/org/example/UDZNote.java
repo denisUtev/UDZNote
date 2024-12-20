@@ -24,6 +24,7 @@ import java.io.*;
 import java.util.*;
 
 import static org.example.Params.initFonts;
+import static org.example.Params.loadSettings;
 
 public class UDZNote {
 
@@ -47,6 +48,7 @@ public class UDZNote {
     public UDZNote() {
         WORKING_DIR = System.getProperty("user.dir");
         initFonts(WORKING_DIR);
+        //loadSettings();
         checkImageDirectory();
         //ROOT_PATH = WORKING_DIR + File.separator + "data" + File.separator;
         dictDescriptions = getFilesDescription();
@@ -76,6 +78,10 @@ public class UDZNote {
         mainFrame.setDefaultCloseOperation(mainFrame.EXIT_ON_CLOSE);
         mainFrame.setTitle("UDZNote");
         mainFrame.setVisible(true);
+
+        // Устанавливаем изображение для иконки
+        Image icon = Toolkit.getDefaultToolkit().getImage(WORKING_DIR + File.separator + "data/Icon.png");
+        mainFrame.setIconImage(icon);
 
         JLabel label = new JLabel();
         DEFAULT_TEXT_COLOR = label.getForeground();
