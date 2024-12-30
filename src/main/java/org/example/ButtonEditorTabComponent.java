@@ -25,6 +25,7 @@ public class ButtonEditorTabComponent extends JPanel {
         this.textPane = textPane;
         setOpaque(false);
 
+        name.setFont(Params.TAB_TITLE_FONT);
         add(name);
         //addMouseListener(tabMouseListener);
         //add more space between the label and the button
@@ -114,7 +115,11 @@ public class ButtonEditorTabComponent extends JPanel {
                 g2.translate(1, 1);
             }
             g2.setStroke(new BasicStroke(2));
-            g2.setColor(new Color(215, 215, 215));
+            if (Params.THEME.equals("Темная")) {
+                g2.setColor(new Color(215, 215, 215));
+            } else {
+                g2.setColor(new Color(35, 35, 35));
+            }
             if (getModel().isRollover()) {
                 g2.setColor(Color.RED);
             }

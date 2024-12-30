@@ -62,7 +62,8 @@ public class Card {
 
             @Override
             public void mouseExited(MouseEvent e) {
-                titleLabel.setForeground(DEFAULT_TEXT_COLOR);
+                JLabel label = new JLabel();
+                titleLabel.setForeground(label.getForeground());
             }
 
             @Override

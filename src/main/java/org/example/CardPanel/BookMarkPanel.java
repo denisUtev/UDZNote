@@ -1,5 +1,7 @@
 package org.example.CardPanel;
 
+import org.example.Params;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -26,9 +28,9 @@ public class BookMarkPanel {
         // Поле для поиска по имени
         JPanel nameSearchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel nameLabel = new JLabel("Название:");
-        nameLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        nameLabel.setFont(Params.BIG_LABEL_FONT);
         JTextField nameField = new JTextField();
-        nameField.setFont(new Font("Arial", Font.PLAIN, 18));
+        nameField.setFont(Params.TAB_TITLE_FONT);
         nameField.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -42,9 +44,9 @@ public class BookMarkPanel {
         // Поле для поиска по тегам
         JPanel bookMarkSearchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel tagLabel = new JLabel("Избранное:");
-        tagLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        tagLabel.setFont(Params.BIG_LABEL_FONT);
         JTextField bookMarkField = new JTextField();
-        bookMarkField.setFont(new Font("Arial", Font.PLAIN, 18));
+        bookMarkField.setFont(Params.TAB_TITLE_FONT);
         bookMarkSearchPanel.add(tagLabel, BorderLayout.WEST);
         bookMarkSearchPanel.add(bookMarkField, BorderLayout.CENTER);
         bookMarkField.addActionListener(new ActionListener() {
@@ -61,21 +63,22 @@ public class BookMarkPanel {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 cardPanel.reloadCardPanel();
-                cardPanel.setDataForCards(org.example.UFileService.getFiles(ROOT_PATH));
+                cardPanel.setDataForBookMarkCards(org.example.UFileService.getFiles(ROOT_PATH));
                 cardPanel.findCards(nameField.getText(), bookMark);
             }
         });
-        updateCardsPanelButton.setText("Обновить");
-        updateCardsPanelButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        updateCardsPanelButton.setText("\uE042");
+        updateCardsPanelButton.setFont(Params.BUTTONS_FONT2);
+        updateCardsPanelButton.setMargin(new Insets(4, 6, 4, 6));
 
 
-        nameField.setPreferredSize(new Dimension(200, 25));
-        bookMarkField.setPreferredSize(new Dimension(150, 25));
+        nameField.setPreferredSize(new Dimension(400, 30));
+        bookMarkField.setPreferredSize(new Dimension(200, 30));
         // Добавляем элементы в основную панель
         searchPanel.add(nameSearchPanel);
         searchPanel.add(Box.createVerticalStrut(10));
         searchPanel.add(bookMarkSearchPanel);
-        searchPanel.add(Box.createVerticalStrut(10));
+        searchPanel.add(Box.createVerticalStrut(0));
         JPanel updateButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         updateButtonPanel.add(updateCardsPanelButton);
         searchPanel.add(updateButtonPanel);

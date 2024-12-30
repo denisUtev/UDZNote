@@ -1,6 +1,7 @@
 package org.example.TextPaneActions;
 
 import org.example.ImageLabel;
+import org.example.Params;
 import org.example.UFileService;
 import org.example.UTextPane;
 
@@ -28,9 +29,9 @@ public class PasteImageAction {
         parentTextPane = textPane;
         this.imageIcon = imageIcon;
 
-        frame = new JFrame("Paste image");
+        frame = new JFrame("Вставить изображение");
         frame.setSize(450, 400);
-        frame.setTitle("Add image");
+        frame.setTitle("Вставить изображение");
         frame.setVisible(true);
         frame.setLayout(new BorderLayout());
         initComponents();
@@ -49,6 +50,8 @@ public class PasteImageAction {
 
         JPanel updateButtonPanel = new JPanel(new BorderLayout());
         JButton updateImageButton = new JButton("Предпросмотр");
+        updateImageButton.setFont(Params.BUTTONS_FONT2);
+        updateImageButton.setText("\uE8BA");
         updateImageButton.addActionListener(new UpdateButtonListener());
         updateButtonPanel.add(updateImageButton, BorderLayout.CENTER);
         sizePanel.add(updateButtonPanel, BorderLayout.EAST);

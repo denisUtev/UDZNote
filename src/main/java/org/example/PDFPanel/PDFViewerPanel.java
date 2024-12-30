@@ -7,6 +7,7 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.text.PDFTextStripperByArea;
 import org.apache.pdfbox.text.TextPosition;
+import org.example.AsyncTaskWithAnimation;
 import org.example.UDZNote;
 
 import javax.swing.*;
@@ -29,7 +30,7 @@ public class PDFViewerPanel extends JPanel {
     private final List<TextPosition> characterPositions = new ArrayList<>();
     private List<TextPosition> selectedCharacters = new ArrayList<>();
     private PDDocument document = new PDDocument();
-    private final PDFRenderer renderer;
+    private PDFRenderer renderer;
     private PDRectangle documentBox;
     private File pdfFile;
 
@@ -70,27 +71,37 @@ public class PDFViewerPanel extends JPanel {
     public final static String COPY_ACTION = "Copy";
     public PDFViewerPanel(File pdfFile) throws IOException {
         this.pdfFile = pdfFile;
-        ActionListener actionListener = e -> {
-            if (isNumber(pageTextField.getText())) {
-                currentPage = Integer.parseInt(pageTextField.getText().substring(0, indexSlash(pageTextField.getText())));
-                currentPage--;
-                if (currentPage < 0) {
-                    currentPage = 0;
+        AsyncTaskWithAnimation asyncTask = new AsyncTaskWithAnimation();
+        asyncTask.runAsync(
+                () -> {
+                    ActionListener actionListener = e -> {
+                        if (isNumber(pageTextField.getText())) {
+                            currentPage = Integer.parseInt(pageTextField.getText().substring(0, indexSlash(pageTextField.getText())));
+                            currentPage--;
+                            if (currentPage < 0) {
+                                currentPage = 0;
+                            }
+                            if (currentPage > document.getNumberOfPages() - 1) {
+                                currentPage = document.getNumberOfPages() - 1;
+                            }
+                        }
+                        renderPage();
+                    };
+                    pageTextField.addActionListener(actionListener);
+                    try {
+                        document = PDDocument.load(pdfFile);
+                        renderer = new PDFRenderer(document);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                () -> {
+                    setLayout(new BorderLayout());
+                    add(canvas, BorderLayout.CENTER);
+                    canvas.setComponentPopupMenu(createPopupMenu());
+                    renderPage();
                 }
-                if (currentPage > document.getNumberOfPages() - 1) {
-                    currentPage = document.getNumberOfPages() - 1;
-                }
-            }
-            renderPage();
-        };
-        pageTextField.addActionListener(actionListener);
-
-
-        document = PDDocument.load(pdfFile);
-        renderer = new PDFRenderer(document);
-
-        setLayout(new BorderLayout());
-        add(canvas, BorderLayout.CENTER);
+        );
 
         canvas.addMouseListener(new MouseAdapter() {
 
@@ -143,9 +154,6 @@ public class PDFViewerPanel extends JPanel {
                 }
             }
         });
-        canvas.setComponentPopupMenu(createPopupMenu());
-
-        renderPage();
     }
 
     private JPopupMenu createPopupMenu() {

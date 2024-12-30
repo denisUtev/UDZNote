@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 import static org.example.Params.*;
+import static org.example.UDZNote.ROOT_PATH;
 import static org.example.UDZNote.WORKING_DIR;
 
 public class LeftPanel extends JPanel {
@@ -72,6 +73,7 @@ public class LeftPanel extends JPanel {
     }
 
     public void updateFileTree() {
+        fileTree.setRootPath(ROOT_PATH);
         fileTree.updateFileTree();
     }
 }

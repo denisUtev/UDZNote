@@ -48,11 +48,11 @@ public class CardPanel extends JPanel {
         add(cardsScrollPane, BorderLayout.CENTER);
     }
 
-    public void setDataForCards(ArrayList<File> files) {
+    public void setDataForSearchCards(ArrayList<File> files) {
         for(File file : files) {
             String lastModifiedTime = getLastModifiedTime(file);
             if (file.isDirectory()) {
-                setDataForCards(UFileService.getFiles(file.getPath()));
+                setDataForSearchCards(UFileService.getFiles(file.getPath()));
             } else {
                 String description = "Без описания";
                 if (UDZNote.dictDescriptions.containsKey(file.getPath())) {
@@ -66,6 +66,30 @@ public class CardPanel extends JPanel {
                 cards.add(card);
                 cardsPanel.add(card.getCard());
                 cardsPanel.add(Box.createVerticalStrut(10));
+            }
+        }
+        cardsScrollPane.repaint();
+        cardsScrollPane.updateUI();
+    }
+
+    public void setDataForBookMarkCards(ArrayList<File> files) {
+        for(File file : files) {
+            String lastModifiedTime = getLastModifiedTime(file);
+            if (file.isDirectory()) {
+                setDataForBookMarkCards(UFileService.getFiles(file.getPath()));
+            } else {
+                String description = "Без описания";
+                if (UDZNote.dictDescriptions.containsKey(file.getPath())) {
+                    description = UDZNote.dictDescriptions.get(file.getPath());
+                }
+                String bookMark = "";
+                if (UDZNote.dictBookMarks.containsKey(file.getPath())) {
+                    bookMark = UDZNote.dictBookMarks.get(file.getPath());
+                    Card card = createCard(file.getName(), bookMark, description, getTagsFromFile(file), lastModifiedTime, file);
+                    cards.add(card);
+                    cardsPanel.add(card.getCard());
+                    cardsPanel.add(Box.createVerticalStrut(10));
+                }
             }
         }
         cardsScrollPane.repaint();

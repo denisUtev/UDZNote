@@ -1,6 +1,7 @@
 package org.example.TextPaneActions;
 
 import org.example.ImageLabel;
+import org.example.Params;
 import org.example.UFileService;
 import org.example.UTextPane;
 
@@ -32,9 +33,9 @@ public class EditImageAction {
         imagePosition = position;
         this.linkImage = linkImage;
 
-        frame = new JFrame("Edit image");
+        frame = new JFrame("Изменить изображение");
         frame.setSize(450, 400);
-        frame.setTitle("Edit image");
+        frame.setTitle("Изменить изображение");
         frame.setVisible(true);
         frame.setLayout(new BorderLayout());
         initComponents(width, height);
@@ -55,6 +56,8 @@ public class EditImageAction {
 
         JPanel updateButtonPanel = new JPanel(new BorderLayout());
         JButton updateImageButton = new JButton("Предпросмотр");
+        updateImageButton.setFont(Params.BUTTONS_FONT2);
+        updateImageButton.setText("\uE8BA");
         updateImageButton.addActionListener(new UpdateButtonListener());
         updateButtonPanel.add(updateImageButton, BorderLayout.CENTER);
         sizePanel.add(updateButtonPanel, BorderLayout.EAST);

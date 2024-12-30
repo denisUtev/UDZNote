@@ -17,14 +17,14 @@ public class AddLinkAction extends AbstractAction {
     private final UTextPane parentTextPane;
 
     public AddLinkAction(UTextPane textPane) {
-        super("Add Link");
+        super("Добавить ссылку");
         parentTextPane = textPane;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         // Создаем окно для ввода текста и ссылки
-        JFrame linkFrame = new JFrame("Add Link");
+        JFrame linkFrame = new JFrame("Добавить ссылку");
         linkFrame.setSize(300, 150);
         linkFrame.setLayout(new BorderLayout(2, 5));
 

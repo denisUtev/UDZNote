@@ -21,7 +21,7 @@ public class FileTree extends JScrollPane {
 
     JTree fileTree;
 
-    private final Path rootPath;
+    private Path rootPath;
     private final File rootFile;
     private FileTime lastModifiedTime;
 
@@ -40,7 +40,7 @@ public class FileTree extends JScrollPane {
         getViewport().add(fileTree);
         initMouseListeners();
 
-        fileTree.setFont(Params.BIG_TAB_TITLE_FONT);
+        fileTree.setFont(Params.SMALL_TAB_TITLE_FONT);
         fileTree.setCellRenderer(new UFileTreeView.MyTreeCellRenderer());
         fileTree.setComponentPopupMenu(createTreeFileMenu());
 
@@ -78,6 +78,10 @@ public class FileTree extends JScrollPane {
             //openFile.open(allPath.toString());
             //System.out.println("You selected " + Arrays.toString(node.getPath()));
         });
+    }
+
+    public void setRootPath(String path) {
+        rootPath = Paths.get(path);
     }
 
     public void updateFileTree() {

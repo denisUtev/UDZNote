@@ -1,6 +1,8 @@
 package org.example.TextPaneActions;
 
+import org.example.BoxLayoutUtils.BoxLayoutUtils;
 import org.example.ImageLabel;
+import org.example.Params;
 import org.example.UFileService;
 import org.example.UTextPane;
 
@@ -31,9 +33,9 @@ public class AddImageAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
-        frame = new JFrame("Add image");
+        frame = new JFrame("Добавить изображение");
         frame.setSize(450, 400);
-        frame.setTitle("Add image");
+        frame.setTitle("Добавить изображение");
         frame.setVisible(true);
         frame.setLayout(new BorderLayout());
         initComponents();
@@ -45,9 +47,17 @@ public class AddImageAction extends AbstractAction {
         pathField = new JTextField();
         JButton browseButton = new JButton("Обзор...");
         browseButton.addActionListener(new BrowseButtonListener());
+        browseButton.setFont(Params.BUTTONS_FONT2);
+        browseButton.setText("\uE2C4");
+
+        JPanel browseButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        //browseButtonPanel.setBorder(BorderFactory.createEmptyBorder());
+        browseButtonPanel.add(browseButton);
+        browseButtonPanel.add(BoxLayoutUtils.createHorizontalStrut(6));
 
         pathPanel.add(pathField, BorderLayout.CENTER);
-        pathPanel.add(browseButton, BorderLayout.EAST);
+        pathPanel.add(browseButtonPanel, BorderLayout.EAST);
+
 
         // Панель для размеров
         JPanel ParamsPanel = new JPanel(new BorderLayout(5, 5));
@@ -61,6 +71,8 @@ public class AddImageAction extends AbstractAction {
 
         JPanel updateButtonPanel = new JPanel(new BorderLayout());
         JButton updateImageButton = new JButton("Предпросмотр");
+        updateImageButton.setFont(Params.BUTTONS_FONT2);
+        updateImageButton.setText("\uE8BA");
         updateImageButton.addActionListener(new UpdateButtonListener());
         updateButtonPanel.add(updateImageButton, BorderLayout.CENTER);
         sizePanel.add(updateButtonPanel, BorderLayout.EAST);

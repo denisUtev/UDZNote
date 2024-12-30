@@ -83,9 +83,11 @@ public class UFileTreeView {
                 g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                g2.setColor(color);
-                g2.setFont(new Font("unicode", Font.BOLD, 22));
-                g2.drawString("\uD83D\uDDC0", -2, 21);
+                //g2.setColor(color);
+                //g2.setFont(new Font("unicode", Font.BOLD, 22));
+                g2.setFont(Params.BUTTONS_FONT);
+                //g2.drawString("\uD83D\uDDC0", -2, 21);
+                g2.drawString("\uE2C8", 0, 26);
             }
         }
 

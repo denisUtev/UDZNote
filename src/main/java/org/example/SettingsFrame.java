@@ -1,11 +1,26 @@
 package org.example;
 
+import org.example.TextPaneActions.AddImageAction;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.File;
+
+import static org.example.Params.fontPath;
+import static org.example.UDZNote.*;
 
 public class SettingsFrame {
 
-    private JFrame frame;
+    private static JFrame frame;
+
+    static String newBDPath = "";
+    static String newTheme = "";
+    static String newFont = "";
+    static int newSizeH1 = 40;
+    static int newSizeH2 = 32;
+    static int newSizeH3 = 26;
+    static int newSizePast = 18;
 
     public SettingsFrame() {
         initFrame();
@@ -77,16 +92,59 @@ public class SettingsFrame {
         // Компоненты для общих настроек
         JLabel bdLabel = new JLabel("База знаний:");
         bdLabel.setFont(Params.CODE_FONT);
-        JTextField fontTextField = new JTextField(20);
+        JTextField fontTextField = new JTextField();
         fontTextField.setFont(Params.CODE_FONT);
         fontTextField.setText(UDZNote.ROOT_PATH);
+
+        JButton browseButton = new JButton("Обзор...");
+        browseButton.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int result = fileChooser.showOpenDialog(frame);
+
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    fontTextField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+                    //ROOT_PATH = fileChooser.getSelectedFile().getAbsolutePath();
+                }
+            }
+        });
+        browseButton.setFont(Params.BUTTONS_FONT);
+        browseButton.setText("\uE2C4");
+
+        JPanel pathPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        pathPanel.add(fontTextField);
+        pathPanel.add(browseButton);
 
         // Размещение компонентов
         gbc.gridx = 0;
         gbc.gridy = 0;
         panel.add(bdLabel, gbc);
-        gbc.gridx = 1;
-        panel.add(fontTextField, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        panel.add(pathPanel, gbc);
+//        gbc.gridx = 1;
+//        gbc.gridy = 1;
+//        panel.add(browseButton, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        panel.add(createSaveSettingsPanel(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if (new File(fontTextField.getText()).exists()) {
+                    newBDPath = fontTextField.getText();
+                    ROOT_PATH = newBDPath;
+                    Params.saveSettings();
+                    Params.loadSettings();
+                    leftPanel.updateFileTree();
+                } else {
+                    JOptionPane.showConfirmDialog(mainFrame, "Указанный путь не существует", "Ошибка",
+                            JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+                }
+            }
+        }), gbc);
 
         return panel;
     }
@@ -105,7 +163,7 @@ public class SettingsFrame {
         languageLabel.setFont(Params.CODE_FONT);
         JComboBox<String> languageComboBox = new JComboBox<>(new String[] { "Светлая", "Темная" });
         languageComboBox.setFont(Params.CODE_FONT);
-        if (Params.THEME.equals("dark")) {
+        if (Params.THEME.equals("Темная")) {
             languageComboBox.setSelectedIndex(1);
         }
 
@@ -126,25 +184,25 @@ public class SettingsFrame {
         fontSizeH1Label.setFont(Params.CODE_FONT);
         JTextField fontSizeH1TextField = new JTextField(5);
         fontSizeH1TextField.setFont(Params.CODE_FONT);
-        fontSizeH1TextField.setText("40");
+        fontSizeH1TextField.setText(String.valueOf(Params.sizeH1));
 
         JLabel fontSizeH2Label = new JLabel("Размер H2:");
         fontSizeH2Label.setFont(Params.CODE_FONT);
         JTextField fontSizeH2TextField = new JTextField(5);
         fontSizeH2TextField.setFont(Params.CODE_FONT);
-        fontSizeH2TextField.setText("32");
+        fontSizeH2TextField.setText(String.valueOf(Params.sizeH2));
 
         JLabel fontSizeH3Label = new JLabel("Размер H3:");
         fontSizeH3Label.setFont(Params.CODE_FONT);
         JTextField fontSizeH3TextField = new JTextField(5);
         fontSizeH3TextField.setFont(Params.CODE_FONT);
-        fontSizeH3TextField.setText("26");
+        fontSizeH3TextField.setText(String.valueOf(Params.sizeH3));
 
         JLabel fontSizePastLabel = new JLabel("Размер Past:");
         fontSizePastLabel.setFont(Params.CODE_FONT);
         JTextField fontSizePastTextField = new JTextField(5);
         fontSizePastTextField.setFont(Params.CODE_FONT);
-        fontSizePastTextField.setText("18");
+        fontSizePastTextField.setText(String.valueOf(Params.sizePast));
 
         // Размещение компонентов
         gbc.gridx = 0;
@@ -177,6 +235,55 @@ public class SettingsFrame {
         gbc.gridx = 1;
         panel.add(fontSizePastTextField, gbc);
 
+        gbc.gridx = 1;
+        gbc.gridy = 6;
+        panel.add(createSaveSettingsPanel(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if (languageComboBox.getSelectedIndex() == 1) {
+                    Params.THEME = "Темная";
+                } else {
+                    Params.THEME = "Светлая";
+                }
+                if (!fontTextField.getText().equals("unicode")) {
+                    if (new File(fontTextField.getText()).exists()) {
+                        fontPath = fontTextField.getText();
+                    } else {
+                        JOptionPane.showConfirmDialog(mainFrame, "Указанный путь не существует", "Ошибка",
+                                JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+                    }
+                }
+                if (isNumeric(fontSizeH1TextField.getText())) {
+                    Params.sizeH1 = Integer.parseInt(fontSizeH1TextField.getText());
+                }
+                if (isNumeric(fontSizeH2TextField.getText())) {
+                    Params.sizeH2 = Integer.parseInt(fontSizeH2TextField.getText());
+                }
+                if (isNumeric(fontSizeH3TextField.getText())) {
+                    Params.sizeH3 = Integer.parseInt(fontSizeH3TextField.getText());
+                }
+                if (isNumeric(fontSizePastTextField.getText())) {
+                    Params.sizePast = Integer.parseInt(fontSizePastTextField.getText());
+                }
+                Params.saveSettings();
+                Params.initFonts(WORKING_DIR);
+                Params.loadSettings();
+            }
+        }), gbc);
+        return panel;
+    }
+
+    public static boolean isNumeric(String str) {
+        return str.matches("-?\\d+"); // Для целых чисел
+    }
+
+    private static JPanel createSaveSettingsPanel(AbstractAction action) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton saveButton = new JButton("Сохранить");
+        saveButton.setAction(action);
+        saveButton.setText("Сохранить");
+        saveButton.setFont(Params.TAB_TITLE_FONT);
+        panel.add(saveButton);
         return panel;
     }
 

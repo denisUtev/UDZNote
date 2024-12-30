@@ -60,11 +60,20 @@ public class UTextPane extends JTextPane {
         this.fileName = fileName;
         this.filePath = new File(filePath);
 
-        if (fileName.endsWith(".rtf")) {
-            readRtfFile();
-        } else if (fileName.endsWith(".md")) {
-            readMdFile();
-        }
+        AsyncTaskWithAnimation asyncTask = new AsyncTaskWithAnimation();
+        asyncTask.runAsync(
+                () -> {
+                    if (fileName.endsWith(".rtf")) {
+                        readRtfFile();
+                    } else if (fileName.endsWith(".md")) {
+                        readMdFile();
+                    }
+                },
+                () -> {
+
+                }
+        );
+
 
         try {
             lastModifiedTime = Files.getLastModifiedTime(Paths.get(filePath));
@@ -234,20 +243,22 @@ public class UTextPane extends JTextPane {
             // проверяем хештег ли
             int start = getCaretPosition() - 2;
             start = getStartTag(text, start);
-            if (text.charAt(start) == '#' && (text.charAt(start - 1) == ' '
-                    || text.charAt(start - 1) == '\n' || text.charAt(start - 1) == '\t')) {
-                int end = getEndTag(text, start + 1);
-                String hashtag = text.substring(start, end);
-                if (!hashtag.trim().isEmpty()) {
-                    // Создаем кнопку для хештега
-                    JButton button = createHashTagButton(hashtag);
+            if (start - 1 >= 0) {
+                if (text.charAt(start) == '#' && (text.charAt(start - 1) == ' '
+                        || text.charAt(start - 1) == '\n' || text.charAt(start - 1) == '\t')) {
+                    int end = getEndTag(text, start + 1);
+                    String hashtag = text.substring(start, end);
+                    if (!hashtag.trim().isEmpty()) {
+                        // Создаем кнопку для хештега
+                        JButton button = createHashTagButton(hashtag);
 
-                    // Заменяем текст на кнопку
-                    SimpleAttributeSet attrs = new SimpleAttributeSet();
-                    StyleConstants.setComponent(attrs, button);
+                        // Заменяем текст на кнопку
+                        SimpleAttributeSet attrs = new SimpleAttributeSet();
+                        StyleConstants.setComponent(attrs, button);
 
-                    doc.remove(start, end - start);
-                    doc.insertString(start, " ", attrs);
+                        doc.remove(start, end - start);
+                        doc.insertString(start, " ", attrs);
+                    }
                 }
             }
         } catch (BadLocationException e) {
@@ -391,7 +402,8 @@ public class UTextPane extends JTextPane {
                 } else {
                     UFileService.saveFile(filePath.getPath(), getText());
                 }
-                titleTab.setForeground(Color.WHITE);
+                JLabel label = new JLabel();
+                titleTab.setForeground(label.getForeground());
                 try {
                     lastModifiedTime = Files.getLastModifiedTime(Paths.get(filePath.getPath()));
                 } catch (IOException e) {
@@ -801,11 +813,11 @@ public class UTextPane extends JTextPane {
         popupMenu = new JPopupMenu("Menu");
 
         JMenu headersMenu = new JMenu("Headers   ");
-        JMenuItem header1 = getHeaderMenuItem("H1", 40);
+        JMenuItem header1 = getHeaderMenuItem("H1", Params.sizeH1);
         headersMenu.add(header1);
-        JMenuItem header2 = getHeaderMenuItem("H2", 32);
+        JMenuItem header2 = getHeaderMenuItem("H2", Params.sizeH2);
         headersMenu.add(header2);
-        JMenuItem header3 = getHeaderMenuItem("H3", 26);
+        JMenuItem header3 = getHeaderMenuItem("H3", Params.sizeH3);
         headersMenu.add(header3);
 
         popupMenu.add(headersMenu);
@@ -924,7 +936,7 @@ public class UTextPane extends JTextPane {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 SimpleAttributeSet headerStyle = new SimpleAttributeSet();
-                StyleConstants.setFontSize(headerStyle, 18);
+                StyleConstants.setFontSize(headerStyle, Params.sizePast);
                 StyleConstants.setItalic(headerStyle, false);
                 StyleConstants.setBold(headerStyle, false);
                 StyleConstants.setUnderline(headerStyle, false);

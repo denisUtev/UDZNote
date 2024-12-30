@@ -1,5 +1,7 @@
 package org.example.CardPanel;
 
+import org.example.Params;
+
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
@@ -30,9 +32,9 @@ public class SearchPanel {
         // Поле для поиска по имени
         JPanel nameSearchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel nameLabel = new JLabel("Название:");
-        nameLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        nameLabel.setFont(Params.BIG_LABEL_FONT);
         JTextField nameField = new JTextField();
-        nameField.setFont(new Font("Arial", Font.PLAIN, 18));
+        nameField.setFont(Params.TAB_TITLE_FONT);
         nameField.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -46,10 +48,11 @@ public class SearchPanel {
         // Поле для поиска по тегам
         JPanel tagSearchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel tagLabel = new JLabel("Тэг:");
-        tagLabel.setFont(new Font("Arial", Font.PLAIN, 18));
+        tagLabel.setFont(Params.BIG_LABEL_FONT);
         JTextField tagField = new JTextField();
-        tagField.setFont(new Font("Arial", Font.PLAIN, 18));
-        JButton addTagButton = new JButton("Добавить");
+        tagField.setFont(Params.TAB_TITLE_FONT);
+        JButton addTagButton = new JButton("\uE145");
+        addTagButton.setFont(Params.BUTTONS_FONT2);
         addTagButton.setMargin(new Insets(4, 6, 4, 6));
         tagSearchPanel.add(tagLabel, BorderLayout.WEST);
         tagSearchPanel.add(tagField, BorderLayout.CENTER);
@@ -65,13 +68,15 @@ public class SearchPanel {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 cardPanel.reloadCardPanel();
-                cardPanel.setDataForCards(org.example.UFileService.getFiles(ROOT_PATH));
+                cardPanel.setDataForSearchCards(org.example.UFileService.getFiles(ROOT_PATH));
                 cardPanel.findCards(nameField.getText(), tags);
             }
         });
-        updateCardsPanelButton.setText("Обновить");
-        updateCardsPanelButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        updateCardsPanelButton.setText("\uE042");
+        updateCardsPanelButton.setFont(Params.BUTTONS_FONT2);
+        updateCardsPanelButton.setMargin(new Insets(4, 6, 4, 6));
         tagsListPanel.add(updateCardsPanelButton);
+
 
         // Обработчик для добавления тегов
         addTagButton.addActionListener((ActionEvent e) -> {
@@ -87,10 +92,11 @@ public class SearchPanel {
                 //tagPanel.setBounds(5, 5, 5, 5);
 
                 JLabel tagNameLabel = new JLabel(tagText);
-                tagNameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+                tagNameLabel.setFont(Params.LABEL_FONT);
                 tagNameLabel.setForeground(new Color(232, 181, 12));
-                JButton removeButton = new JButton("×");
-                removeButton.setMargin(new Insets(0, 5, 0, 5));
+                JButton removeButton = new JButton("\uE14C");
+                removeButton.setFont(Params.BUTTONS_FONT3);
+                //removeButton.setMargin(new Insets(0, 5, 0, 5));
                 removeButton.setForeground(Color.WHITE);
 
                 // Обработчик удаления тега
@@ -112,13 +118,13 @@ public class SearchPanel {
             cardPanel.findCards(nameField.getText(), tags);
         });
 
-        nameField.setPreferredSize(new Dimension(200, 25));
-        tagField.setPreferredSize(new Dimension(150, 25));
+        nameField.setPreferredSize(new Dimension(400, 30));
+        tagField.setPreferredSize(new Dimension(200, 30));
         // Добавляем элементы в основную панель
         searchPanel.add(nameSearchPanel);
         searchPanel.add(Box.createVerticalStrut(10));
         searchPanel.add(tagSearchPanel);
-        searchPanel.add(Box.createVerticalStrut(10));
+        searchPanel.add(Box.createVerticalStrut(0));
         //searchPanel.add(new JLabel("Selected tags:"));
         searchPanel.add(tagsListPanel);
 

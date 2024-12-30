@@ -28,9 +28,9 @@ import static org.example.Params.loadSettings;
 
 public class UDZNote {
 
-    private static JFrame mainFrame;
+    public static JFrame mainFrame;
     private JSplitPane splitPane;
-    private static LeftPanel leftPanel;
+    public static LeftPanel leftPanel;
     public static DnDTabbedPane tabbedPane;
     public static Color DEFAULT_TEXT_COLOR;
     public static HashMap<String, String> dictDescriptions;
@@ -48,7 +48,7 @@ public class UDZNote {
     public UDZNote() {
         WORKING_DIR = System.getProperty("user.dir");
         initFonts(WORKING_DIR);
-        //loadSettings();
+        loadSettings();
         checkImageDirectory();
         //ROOT_PATH = WORKING_DIR + File.separator + "data" + File.separator;
         dictDescriptions = getFilesDescription();
@@ -74,7 +74,7 @@ public class UDZNote {
 
     private void initMainFrame() {
         mainFrame = new JFrame("UDZNote");
-        mainFrame.setSize(800, 550);
+        mainFrame.setSize(860, 600);
         mainFrame.setDefaultCloseOperation(mainFrame.EXIT_ON_CLOSE);
         mainFrame.setTitle("UDZNote");
         mainFrame.setVisible(true);
@@ -236,12 +236,16 @@ public class UDZNote {
 
     public static void createSearchTab() {
         CardPanel cardPanel = new CardPanel(new SearchPanel());
-        cardPanel.setDataForCards(org.example.UFileService.getFiles(ROOT_PATH));
+        cardPanel.setDataForSearchCards(org.example.UFileService.getFiles(ROOT_PATH));
 
         String nameTab = "Поиск";
         JLabel titleTab = new JLabel(nameTab);
         titleTab.setFont(Params.TAB_TITLE_FONT);
-        titleTab.setForeground(Color.WHITE);
+//        if (Params.THEME.equals("Темная")) {
+//            titleTab.setForeground(Color.WHITE);
+//        } else {
+//            titleTab.setForeground(Color.BLACK);
+//        }
 
         ButtonEditorTabComponent tabComponent = new ButtonEditorTabComponent(tabbedPane, titleTab, null);
         addTab(nameTab, cardPanel, tabComponent);
@@ -249,12 +253,16 @@ public class UDZNote {
 
     public static void createBookMarkTab() {
         CardPanel cardPanel = new CardPanel(new BookMarkPanel());
-        cardPanel.setDataForCards(org.example.UFileService.getFiles(ROOT_PATH));
+        cardPanel.setDataForBookMarkCards(org.example.UFileService.getFiles(ROOT_PATH));
 
         String nameTab = "Избранное";
         JLabel titleTab = new JLabel(nameTab);
         titleTab.setFont(Params.TAB_TITLE_FONT);
-        titleTab.setForeground(Color.WHITE);
+//        if (Params.THEME.equals("Темная")) {
+//            titleTab.setForeground(Color.WHITE);
+//        } else {
+//            titleTab.setForeground(Color.BLACK);
+//        }
 
         ButtonEditorTabComponent tabComponent = new ButtonEditorTabComponent(tabbedPane, titleTab, null);
         addTab(nameTab, cardPanel, tabComponent);
@@ -296,7 +304,11 @@ public class UDZNote {
         JLabel titleTab = new JLabel(nameTab);
         titleTab.setFont(Params.TAB_TITLE_FONT);
         textPane.setTitleTab(titleTab);
-        titleTab.setForeground(Color.WHITE);
+//        if (Params.THEME.equals("Темная")) {
+//            titleTab.setForeground(Color.WHITE);
+//        } else {
+//            titleTab.setForeground(Color.BLACK);
+//        }
 
         textPane.setDropTarget(new DropTarget() {
             public synchronized void drop(DropTargetDropEvent evt) {
@@ -370,7 +382,11 @@ public class UDZNote {
         nameTab = getShortedTitle(nameTab);
         JLabel titleTab = new JLabel(nameTab);
         titleTab.setFont(Params.TAB_TITLE_FONT);
-        titleTab.setForeground(Color.WHITE);
+//        if (Params.THEME.equals("Темная")) {
+//            titleTab.setForeground(Color.WHITE);
+//        } else {
+//            titleTab.setForeground(Color.BLACK);
+//        }
 
         ButtonEditorTabComponent tabComponent = new ButtonEditorTabComponent(tabbedPane, titleTab, null);
         tabComponent.setPDFViewerPanel(pdfViewer);
