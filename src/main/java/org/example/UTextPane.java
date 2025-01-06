@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,26 +55,27 @@ public class UTextPane extends JTextPane {
     public final static String PASTE_ACTION = "Paste";
     public final static String CHOOSE_STYLE_ACTION = "Set style";
     private boolean isChooseStyle = false;//Включен ли выбор стилизирования текста
+    //public AtomicBoolean isLoaded = new AtomicBoolean(false);
 
 
     public UTextPane(String fileName, String filePath) {
         this.fileName = fileName;
         this.filePath = new File(filePath);
 
-        AsyncTaskWithAnimation asyncTask = new AsyncTaskWithAnimation();
-        asyncTask.runAsync(
-                () -> {
-                    if (fileName.endsWith(".rtf")) {
-                        readRtfFile();
-                    } else if (fileName.endsWith(".md")) {
-                        readMdFile();
-                    }
-                },
-                () -> {
-
-                }
-        );
-
+//        AsyncTaskWithAnimation asyncTask = new AsyncTaskWithAnimation();
+//        asyncTask.runAsync(
+//                () -> {
+//
+//                },
+//                () -> {
+//                    isLoaded.set(true);
+//                }
+//        );
+        if (fileName.endsWith(".rtf")) {
+            readRtfFile();
+        } else if (fileName.endsWith(".md")) {
+            readMdFile();
+        }
 
         try {
             lastModifiedTime = Files.getLastModifiedTime(Paths.get(filePath));

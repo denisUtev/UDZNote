@@ -178,7 +178,7 @@ public class SettingsFrame {
         fontLabel.setFont(Params.CODE_FONT);
         JTextField fontTextField = new JTextField(20);
         fontTextField.setFont(Params.CODE_FONT);
-        fontTextField.setText(Params.TEXT_FONT.getName());
+        fontTextField.setText(Params.fontPath);
 
         JLabel fontSizeH1Label = new JLabel("Размер H1:");
         fontSizeH1Label.setFont(Params.CODE_FONT);

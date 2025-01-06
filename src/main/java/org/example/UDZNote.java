@@ -80,7 +80,7 @@ public class UDZNote {
         mainFrame.setVisible(true);
 
         // Устанавливаем изображение для иконки
-        Image icon = Toolkit.getDefaultToolkit().getImage(WORKING_DIR + File.separator + "data/Icon.png");
+        Image icon = Toolkit.getDefaultToolkit().getImage(WORKING_DIR + File.separator + "data/icon.jpg");
         mainFrame.setIconImage(icon);
 
         JLabel label = new JLabel();
@@ -120,29 +120,29 @@ public class UDZNote {
 
     public static void setDescriptionToFile(File file, String description) {
         dictDescriptions.put(file.getPath(), description);
-        writeDictionaryToJsonFile(dictDescriptions, WORKING_DIR + File.separator + DESCRIPTIONS_FILE);
+        writeDictionaryToJsonFile(dictDescriptions, WORKING_DIR + File.separator + "data" + File.separator + DESCRIPTIONS_FILE);
     }
 
     public static void setBookMarkToFile(File file, String bookMark) {
         dictBookMarks.put(file.getPath(), bookMark);
-        writeDictionaryToJsonFile(dictBookMarks, WORKING_DIR + File.separator + BOOKMARKS_FILE);
+        writeDictionaryToJsonFile(dictBookMarks, WORKING_DIR + File.separator + "data" + File.separator + BOOKMARKS_FILE);
     }
 
     public static void setBookNameToFile(File file, String bookName) {
         dictBookNames.put(file.getPath(), bookName);
-        writeDictionaryToJsonFile(dictBookNames, WORKING_DIR + File.separator + BOOK_NAMES_FILE);
+        writeDictionaryToJsonFile(dictBookNames, WORKING_DIR + File.separator + "data" + File.separator + BOOK_NAMES_FILE);
     }
 
     public HashMap<String, String> getFilesDescription() {
-        return readJsonFile(WORKING_DIR + File.separator + DESCRIPTIONS_FILE);
+        return readJsonFile(WORKING_DIR + File.separator + "data" + File.separator + DESCRIPTIONS_FILE);
     }
 
     public HashMap<String, String> getFilesBookMark() {
-        return readJsonFile(WORKING_DIR + File.separator + BOOKMARKS_FILE);
+        return readJsonFile(WORKING_DIR + File.separator + "data" + File.separator + BOOKMARKS_FILE);
     }
 
     public HashMap<String, String> getFilesBookNames() {
-        return readJsonFile(WORKING_DIR + File.separator + BOOK_NAMES_FILE);
+        return readJsonFile(WORKING_DIR + File.separator + "data" + File.separator + BOOK_NAMES_FILE);
     }
 
     public static HashMap<String, String> readJsonFile(String filePath) {
@@ -173,7 +173,7 @@ public class UDZNote {
             if (nameBook != null) {
                 dictBookNames.put(bookPath.getPath(), nameBook);
                 UFileService.createPackage(ROOT_PATH, nameBook);
-                writeDictionaryToJsonFile(dictBookNames, WORKING_DIR + File.separator + BOOK_NAMES_FILE);
+                writeDictionaryToJsonFile(dictBookNames, WORKING_DIR + File.separator + "data" + File.separator + BOOK_NAMES_FILE);
             } else {
                 return;
             }

@@ -1,1 +1,1 @@
-{"C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2\\code.rtf":"Это тест описания заметки \"code.rtf\" #2","C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2\\name.rtf":"Это тестовая заметка"}
+{"C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2\\code.rtf":"Это тест описания заметки \"code.rtf\" #2\nkzkzkz","C:\\Users\\utev2\\Documents\\Мой Дневник\\DATA2\\name.rtf":"Это тестовая заметка"}
